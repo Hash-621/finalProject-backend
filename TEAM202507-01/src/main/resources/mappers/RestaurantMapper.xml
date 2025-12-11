@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TEAM202507_01.menus.restaurant.repository.RestaurantMapper">
+
+    <select id="findAll" resultType="RestaurantDto">
+        SELECT
+            ID,
+            NAME,
+            CATEGORY,
+            ADDRESS,
+            PHONE,
+            DESCRIPTION,
+            CREATED_AT
+        FROM RESTAURANTS
+        ORDER BY ID DESC
+    </select>
+
+    <select id="findById" parameterType="Long" resultType="RestaurantDto">
+        SELECT * FROM RESTAURANTS
+        WHERE ID = #{id}
+    </select>
+
+    <insert id="save" parameterType="RestaurantDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
+        INSERT INTO RESTAURANTS (
+            NAME,
+            CATEGORY,
+            ADDRESS,
+            PHONE,
+            DESCRIPTION,
+            CREATED_AT
+        ) VALUES (
+                     #{name},
+                     #{category},
+                     #{address},
+                     #{phone},
+                     #{description},
+                     SYSDATE
+                 )
+    </insert>
+
+    <update id="update" parameterType="RestaurantDto">
+        UPDATE RESTAURANTS
+        SET
+            NAME = #{name},
+            CATEGORY = #{category},
+            ADDRESS = #{address},
+            PHONE = #{phone},
+            DESCRIPTION = #{description}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM RESTAURANTS
+        WHERE ID = #{id}
+    </delete>
+
+</mapper>

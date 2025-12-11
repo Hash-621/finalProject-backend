@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TEAM202507_01.menus.hospital.repository.HospitalMapper">
+
+    <select id="findAll" resultType="HospitalDto">
+        SELECT
+            ID,
+            MGMT_NUM,
+            NAME,
+            CATEGORY,
+            ADDRESS,
+            TEL,
+            IS_OPEN,
+            UPDATED_AT
+        FROM HOSPITALS
+        ORDER BY ID DESC
+    </select>
+
+    <select id="findById" parameterType="Long" resultType="HospitalDto">
+        SELECT * FROM HOSPITALS
+        WHERE ID = #{id}
+    </select>
+
+    <insert id="save" parameterType="HospitalDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
+        INSERT INTO HOSPITALS (
+            MGMT_NUM,
+            NAME,
+            CATEGORY,
+            ADDRESS,
+            TEL,
+            IS_OPEN,
+            UPDATED_AT
+        ) VALUES (
+                     #{mgmtNum},
+                     #{name},
+                     #{category},
+                     #{address},
+                     #{tel},
+                     1,  SYSDATE
+                 )
+    </insert>
+
+    <update id="update" parameterType="HospitalDto">
+        UPDATE HOSPITALS
+        SET
+            NAME = #{name},
+            CATEGORY = #{category},
+            ADDRESS = #{address},
+            TEL = #{tel},
+            IS_OPEN = #{isOpen},
+            UPDATED_AT = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM HOSPITALS
+        WHERE ID = #{id}
+    </delete>
+
+</mapper>
