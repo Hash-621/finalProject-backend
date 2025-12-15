@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TEAM202507_01.search.repository.SearchMapper">
+
+    <select id="searchIntegrated" resultType="com.example.TEAM202507_01.search.document.SearchDocument">
+        SELECT * FROM (
+                          -- 1. 뉴스 검색
+                          SELECT
+                              ID,
+                              'NEWS' AS CATEGORY,
+                              TITLE,
+                              SUBSTR(CONTENT, 1, 100) AS CONTENT,
+                              '/news/' || ID AS URL
+                          FROM NEWS
+                          WHERE TITLE LIKE '%' || #{keyword} || '%'
+                             OR CONTENT LIKE '%' || #{keyword} || '%'
+
+                          UNION ALL
+
+                          -- 2. 커뮤니티 게시글 검색
+                          SELECT
+                              ID,
+                              'COMMUNITY' AS CATEGORY,
+                              TITLE,
+                              SUBSTR(CONTENT, 1, 100) AS CONTENT,
+                              '/community/free/' || ID AS URL
+                          FROM POSTS
+                          WHERE TITLE LIKE '%' || #{keyword} || '%'
+                             OR CONTENT LIKE '%' || #{keyword} || '%'
+
+                          UNION ALL
+
+                          -- 3. 구인공고 검색
+                          SELECT
+                              ID,
+                              'JOB' AS CATEGORY,
+                              TITLE,
+                              SUBSTR(DESCRIPTION, 1, 100) AS CONTENT,
+                              '/jobs/' || ID AS URL
+                          FROM JOB_POSTS
+                          WHERE TITLE LIKE '%' || #{keyword} || '%'
+                             OR DESCRIPTION LIKE '%' || #{keyword} || '%'
+                      )
+    </select>
+
+</mapper>

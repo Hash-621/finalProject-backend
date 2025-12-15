@@ -49,7 +49,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     
     // ElasticSearch 추가
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+   implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 
     // JWT토큰 관련
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'

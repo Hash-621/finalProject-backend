@@ -1,9 +1,17 @@
+version: '3.7'
 services:
   elasticsearch:
+<<<<<<< HEAD
     build: .  # 현재 폴더의 Dockerfile을 보고 이미지를 만듦
     container_name: elasticsearch
+=======
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: daitshu-elastic
+>>>>>>> cb09d118ad403f079e4ccc85d4783ae2cb30c269
     environment:
+      - node.name=daitshu-node
       - discovery.type=single-node
+<<<<<<< HEAD
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - xpack.security.enabled=false       # [중요] 개발용이라 보안 끔 (https 안 씀)
       - xpack.security.enrollment.enabled=false
@@ -22,3 +30,19 @@ services:
 #     - "9200:9200"
 #    command: >
 #     /bin/sh -c "./bin/elasticsearch-plugin install analysis-nori && ./bin/elasticsearch"
+=======
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # 7.17 버전은 보안 설정(xpack)이 기본적으로 꺼져 있어 설정 불필요
+    ports:
+      - "9200:9200"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+volumes:
+  es_data:
+>>>>>>> cb09d118ad403f079e4ccc85d4783ae2cb30c269
