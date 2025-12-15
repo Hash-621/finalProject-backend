@@ -1,11 +1,24 @@
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1 # 스프링 부트 버전에 맞는 ES 버전 확인 필수
+    build: .  # 현재 폴더의 Dockerfile을 보고 이미지를 만듦
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false       # [중요] 개발용이라 보안 끔 (https 안 씀)
+      - xpack.security.enrollment.enabled=false
     ports:
       - "9200:9200"
-    command: >
-      /bin/sh -c "./bin/elasticsearch-plugin install analysis-nori && ./bin/elasticsearch"
+    # command 부분은 삭제하세요! (Dockerfile에서 이미 설치함)
+
+#services:
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1 # 스프링 부트 버전에 맞는 ES 버전 확인 필수
+#    container_name: elasticsearch
+#    environment:
+#      - discovery.type=single-node
+#      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+#    ports:
+#     - "9200:9200"
+#    command: >
+#     /bin/sh -c "./bin/elasticsearch-plugin install analysis-nori && ./bin/elasticsearch"
