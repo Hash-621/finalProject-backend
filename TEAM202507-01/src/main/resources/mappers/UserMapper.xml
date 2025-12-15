@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TEAM202507_01.user.repository.UserMapper">
+
+    <select id="findAll" resultType="UserDto">
+        SELECT
+            ID,
+            LOGIN_ID,
+            EMAIL,
+            NAME,
+            NICKNAME,
+            BIRTH,
+            SEX,
+            CREATED_AT
+        FROM USERS
+        ORDER BY ID DESC
+    </select>
+
+    <select id="findById" resultType="UserDto">
+        SELECT * FROM USERS WHERE LOGIN_ID = #{loginId}
+    </select>
+
+    <select id="findByLoginId" resultType="UserDto">
+        SELECT * FROM USERS WHERE LOGIN_ID = #{loginId}
+    </select>
+
+    <insert id="save" parameterType="UserDto">
+        INSERT INTO USERS (
+            ID,
+            LOGIN_ID,
+            PASSWORD,
+            EMAIL,
+            NAME,
+            NICKNAME,
+            BIRTH,
+            SEX,
+            CREATED_AT
+        ) VALUES (
+                     #{id},
+                     #{loginId},
+                     #{password},
+                     #{email},
+                     #{name},
+                     #{nickname},
+                     #{birthDate},
+                     #{gender},
+                     SYSDATE
+                 )
+    </insert>
+
+    <update id="update" parameterType="UserDto">
+        UPDATE USERS
+        SET
+            PASSWORD = #{password},
+            EMAIL = #{email},
+            NAME = #{name},
+            NICKNAME = #{nickname},
+            BIRTH = #{birthDate}
+        WHERE LOGIN_ID = #{loginId}
+    </update>
+
+    <delete id="delete" >
+        DELETE FROM USERS WHERE LOGIN_ID = #{loginId}
+    </delete>
+
+    <select id="countByLoginId" resultType="int">
+        SELECT COUNT(*) FROM USERS WHERE LOGIN_ID = #{loginId}
+    </select>
+
+</mapper>

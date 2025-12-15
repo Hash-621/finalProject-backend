@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TEAM202507_01.menus.community.repository.CommunityMapper">
+
+    <resultMap id="CommunityResultMap" type="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+        <id property="id" column="ID" />
+        <result property="userId" column="USER_ID" />
+        <result property="category" column="CATEGORY" />
+        <result property="title" column="TITLE" />
+        <result property="content" column="CONTENT" jdbcType="CLOB"/>
+        <result property="viewCount" column="VIEW_COUNT" />
+        <result property="createdAt" column="CREATED_AT" />
+        <result property="updatedAt" column="UPDATED_AT" />
+    </resultMap>
+
+    <select id="findAll" resultMap="CommunityResultMap">
+        SELECT * FROM POSTS
+        ORDER BY ID DESC
+    </select>
+
+    <select id="findById" resultMap="CommunityResultMap">
+        SELECT * FROM POSTS
+        WHERE ID = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+        <selectKey keyProperty="id" resultType="Long" order="BEFORE">
+            SELECT post_seq.nextval FROM DUAL
+        </selectKey>
+
+        INSERT INTO POSTS (
+        ID,
+        USER_ID,
+        CATEGORY,
+        TITLE,
+        CONTENT,
+        VIEW_COUNT,
+        CREATED_AT,
+        UPDATED_AT
+        ) VALUES (
+        #{id},
+        #{userId},
+        #{category},
+        #{title},
+        #{content},
+        0,
+        SYSDATE,
+        SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+        UPDATE POSTS
+        SET
+            TITLE = #{title},
+            CONTENT = #{content},
+            CATEGORY = #{category},
+            UPDATED_AT = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM POSTS
+        WHERE ID = #{id}
+    </delete>
+
+    <update id="increaseViewCount">
+        UPDATE POSTS
+        SET VIEW_COUNT = VIEW_COUNT + 1
+        WHERE ID = #{id}
+    </update>
+
+</mapper>
