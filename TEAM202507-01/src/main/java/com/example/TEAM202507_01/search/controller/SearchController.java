@@ -10,16 +10,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/search") // URL 경로를 /search로 통합
+@RequestMapping("/api/v1/search")
 public class SearchController {
 
     private final SearchService searchService;
 
-    // 통합 검색 API
-    // 예시: GET /api/v1/search?query=대전
     @GetMapping
     public ResponseEntity<List<SearchDocument>> search(@RequestParam String query) {
-        List<SearchDocument> result = searchService.searchIntegrated(query);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(searchService.searchIntegrated(query));
     }
 }

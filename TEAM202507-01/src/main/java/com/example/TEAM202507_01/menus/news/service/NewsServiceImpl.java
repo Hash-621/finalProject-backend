@@ -1,7 +1,9 @@
 package com.example.TEAM202507_01.menus.news.service;
 
 import com.example.TEAM202507_01.menus.news.dto.NewsDto;
-import com.example.TEAM202507_01.menus.news.repository.NewsMapper; // Mapper Import
+import com.example.TEAM202507_01.menus.news.repository.NewsMapper;
+import com.example.TEAM202507_01.search.document.SearchDocument;
+import com.example.TEAM202507_01.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +15,8 @@ import java.util.List;
 @Transactional
 public class NewsServiceImpl implements NewsService {
 
-    private final NewsMapper newsMapper; // Repository -> Mapper 변경
+    private final NewsMapper newsMapper;
+    private final SearchService searchService; // ★ 검색 서비스 주입
 
     @Override
     @Transactional(readOnly = true)
@@ -33,16 +36,34 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public NewsDto save(NewsDto news) {
+        // 1. DB 저장
         if (news.getId() == null) {
-            newsMapper.save(news); // 신규 등록
+            newsMapper.save(news);
         } else {
-            newsMapper.update(news); // 수정
+            newsMapper.update(news);
         }
+
+        // 2. ★ 엘라스틱서치 동기화
+        try {
+            SearchDocument doc = SearchDocument.builder()
+                    .id("NEWS_" + news.getId())
+                    .originalId(news.getId())
+                    .category("NEWS")
+                    .title(news.getTitle())
+                    .content(news.getContent()) // 뉴스 본문 검색
+                    .url("/news/" + news.getId()) // 뉴스 상세 주소
+                    .build();
+            searchService.saveDocument(doc);
+        } catch (Exception e) {
+            System.err.println("뉴스 검색 등록 실패: " + e.getMessage());
+        }
+
         return news;
     }
 
     @Override
     public void delete(Long id) {
         newsMapper.delete(id);
+        // (선택) 삭제 시 검색엔진 데이터 삭제 로직 추가 가능
     }
 }
