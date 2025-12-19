@@ -27,11 +27,11 @@ public class NewsController {
         return ResponseEntity.ok(newsService.findById(id));
     }
 
-    // 3. 등록 및 수정
-    @PostMapping
-    public ResponseEntity<NewsDto> createNews(@RequestBody NewsDto news) { // Map -> News DTO 변경
-        return ResponseEntity.ok(newsService.save(news));
-    }
+//    // 3. 등록 및 수정
+//    @PostMapping
+//    public ResponseEntity<NewsDto> createNews(@RequestBody NewsDto news) { // Map -> News DTO 변경
+//        return ResponseEntity.ok(newsService.save(news));
+//    }
 
     // 4. 삭제
     @DeleteMapping("/{id}")

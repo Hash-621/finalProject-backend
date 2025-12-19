@@ -35,30 +35,13 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public NewsDto save(NewsDto news) {
+    public void save(NewsDto news) {
         // 1. DB 저장
         if (news.getId() == null) {
             newsMapper.save(news);
         } else {
             newsMapper.update(news);
         }
-
-        // 2. ★ 엘라스틱서치 동기화
-        try {
-            SearchDocument doc = SearchDocument.builder()
-                    .id("NEWS_" + news.getId())
-                    .originalId(news.getId())
-                    .category("NEWS")
-                    .title(news.getTitle())
-                    .content(news.getContent()) // 뉴스 본문 검색
-                    .url("/news/" + news.getId()) // 뉴스 상세 주소
-                    .build();
-            searchService.saveDocument(doc);
-        } catch (Exception e) {
-            System.err.println("뉴스 검색 등록 실패: " + e.getMessage());
-        }
-
-        return news;
     }
 
     @Override

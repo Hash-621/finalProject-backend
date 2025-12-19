@@ -6,11 +6,7 @@
 
     <select id="findAll" resultType="NewsDto">
         SELECT
-            ID,
-            TITLE,
-            CONTENT,
-            PUBLISHER,
-            PUBLISHED_AT
+            *
         FROM NEWS
         ORDER BY ID DESC
     </select>
@@ -20,27 +16,27 @@
         WHERE ID = #{id}
     </select>
 
-    <insert id="save" parameterType="NewsDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
-        INSERT INTO NEWS (
-            TITLE,
-            CONTENT,
-            PUBLISHER,
-            PUBLISHED_AT
-        ) VALUES (
-                     #{title},
-                     #{content},
-                     #{publisher},
-                     SYSDATE )
-    </insert>
+<!--    <insert id="save" parameterType="NewsDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">-->
+<!--        INSERT INTO NEWS (-->
+<!--            TITLE,-->
+<!--            CONTENT,-->
+<!--            PUBLISHER,-->
+<!--            PUBLISHED_AT-->
+<!--        ) VALUES (-->
+<!--                     #{title},-->
+<!--                     #{content},-->
+<!--                     #{publisher},-->
+<!--                     SYSDATE )-->
+<!--    </insert>-->
 
-    <update id="update" parameterType="NewsDto">
-        UPDATE NEWS
-        SET
-            TITLE = #{title},
-            CONTENT = #{content},
-            PUBLISHER = #{publisher}
-        WHERE ID = #{id}
-    </update>
+<!--    <update id="update" parameterType="NewsDto">-->
+<!--        UPDATE NEWS-->
+<!--        SET-->
+<!--            TITLE = #{title},-->
+<!--            CONTENT = #{content},-->
+<!--            PUBLISHER = #{publisher}-->
+<!--        WHERE ID = #{id}-->
+<!--    </update>-->
 
     <delete id="delete" parameterType="Long">
         DELETE FROM NEWS

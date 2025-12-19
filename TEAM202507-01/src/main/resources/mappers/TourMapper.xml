@@ -4,63 +4,65 @@
 
 <mapper namespace="com.example.TEAM202507_01.menus.tour.repository.TourMapper">
 
-    <select id="findAll" resultType="TourDto">
+    <resultMap id="TourMap" type="TourDto">
+        <id property="id" column="tour_id" />
+        <result property="name" column="tour_name" />
+        <result property="address" column="tour_address" />
+        <result property="phone" column="tour_phone" />
+        <result property="description" column="tourspotSumm" /> <result property="price" column="tour_price" />
+        <result property="openTime" column="tour_open_time" />
+    </resultMap>
+
+    <select id="findAll" resultMap="TourMap">
         SELECT
-            ID,
-            NAME,
-            ADDRESS,
-            PHONE,
-            DESCRIPTION,
-            IMAGE_URL,
-            PRICE,
-            OPEN_TIME,
-            CREATED_AT
-        FROM TOURIST_SPOTS ORDER BY ID DESC
+            *
+        FROM tourism
+        ORDER BY tour_id DESC
     </select>
 
-    <select id="findById" parameterType="Long" resultType="TourDto">
-        SELECT * FROM TOURIST_SPOTS
-        WHERE ID = #{id}
+    <select id="findById" parameterType="Long" resultMap="TourMap">
+        SELECT * FROM tourism
+        WHERE tour_id = #{id}
     </select>
 
-    <insert id="save" parameterType="TourDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
-        INSERT INTO TOURIST_SPOTS (
-            NAME,
-            ADDRESS,
-            PHONE,
-            DESCRIPTION,
-            IMAGE_URL,
-            PRICE,
-            OPEN_TIME,
-            CREATED_AT
-        ) VALUES (
-                     #{name},
-                     #{address},
-                     #{phone},
-                     #{description},
-                     #{imageUrl},
-                     #{price},
-                     #{openTime},
-                     SYSDATE
-                 )
-    </insert>
+<!--    <insert id="save" parameterType="TourDto">-->
+<!--        <selectKey keyProperty="id" resultType="Long" order="BEFORE">-->
+<!--            SELECT SEQ_TOURISM_ID.NEXTVAL FROM DUAL-->
+<!--        </selectKey>-->
 
-    <update id="update" parameterType="TourDto">
-        UPDATE TOURIST_SPOTS
-        SET
-            NAME = #{name},
-            ADDRESS = #{address},
-            PHONE = #{phone},
-            DESCRIPTION = #{description},
-            IMAGE_URL = #{imageUrl},
-            PRICE = #{price},
-            OPEN_TIME = #{openTime}
-        WHERE ID = #{id}
-    </update>
+<!--        INSERT INTO tourism (-->
+<!--        CATEGORY,        tour_id,-->
+<!--        tour_name,-->
+<!--        tour_address,-->
+<!--        tour_phone,-->
+<!--        tourspotSumm,    tour_price,-->
+<!--        tour_open_time-->
+<!--        ) VALUES (-->
+<!--        'TOURS',         #{id},-->
+<!--        #{name},-->
+<!--        #{address},-->
+<!--        #{phone},-->
+<!--        #{description},-->
+<!--        #{price},-->
+<!--        #{openTime}-->
+<!--        )-->
+<!--    </insert>-->
+
+<!--    <update id="update" parameterType="TourDto">-->
+<!--        UPDATE tourism-->
+<!--        SET-->
+<!--            tour_name = #{name},-->
+<!--            tour_address = #{address},-->
+<!--            tour_phone = #{phone},-->
+<!--            tourspotSumm = #{description},-->
+<!--            tour_price = #{price},-->
+<!--            tour_open_time = #{openTime}-->
+<!--        WHERE tour_id = #{id}-->
+<!--    </update>-->
 
     <delete id="delete" parameterType="Long">
-        DELETE FROM TOURIST_SPOTS
-        WHERE ID = #{id}
+        DELETE FROM tourism
+        WHERE tour_id = #{id}
     </delete>
 
 </mapper>

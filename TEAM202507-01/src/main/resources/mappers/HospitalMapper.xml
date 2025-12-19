@@ -5,40 +5,39 @@
 <mapper namespace="com.example.TEAM202507_01.menus.hospital.repository.HospitalMapper">
 
     <select id="findAll" resultType="HospitalDto">
-        SELECT
-            ID,
-            MGMT_NUM,
-            NAME,
-            CATEGORY,
-            ADDRESS,
-            TEL,
-            IS_OPEN,
-            UPDATED_AT
-        FROM HOSPITALS
+        SELECT * FROM HOSPITALS
         ORDER BY ID DESC
     </select>
 
-    <select id="findById" parameterType="Long" resultType="HospitalDto">
+    <select id="findById" resultType="HospitalDto">
         SELECT * FROM HOSPITALS
         WHERE ID = #{id}
     </select>
 
+    <select id="findInfo" resultType="HospitalMapDto">
+        SELECT
+               ID,
+               NAME,
+               TREAT_CATEGORY,
+               ADDRESS,
+               TEL
+        FROM HOSPITALS
+        ORDER BY ID DESC
+    </select>
+
     <insert id="save" parameterType="HospitalDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
         INSERT INTO HOSPITALS (
-            MGMT_NUM,
             NAME,
-            CATEGORY,
+            TREAT_CATEGORY,
             ADDRESS,
             TEL,
-            IS_OPEN,
-            UPDATED_AT
+            EDIT_DATE
         ) VALUES (
-                     #{mgmtNum},
                      #{name},
                      #{category},
                      #{address},
                      #{tel},
-                     1,  SYSDATE
+                     SYSDATE
                  )
     </insert>
 

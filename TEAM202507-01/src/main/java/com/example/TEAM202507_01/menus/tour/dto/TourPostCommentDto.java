@@ -3,6 +3,7 @@ package com.example.TEAM202507_01.menus.tour.dto;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,5 +17,5 @@ public class TourPostCommentDto {
     private String userId; // 작성자 ID user_id
     private String content; // 리뷰 내용 content_id
     private boolean isDelete; // 삭제여부 is_delete
-    private LocalDate createdAt; // 작성일시 created_at
+    private LocalDateTime createdAt; // 작성일시 created_at
 }

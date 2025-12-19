@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component; // ★ 이거 임포트 필수!
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -20,8 +21,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Component // ✅ [중요] 이 어노테이션이 있어야 SecurityConfig에서 갖다 쓸 수 있습니다!
 @RequiredArgsConstructor
-public class JwtFilter extends GenericFilterBean { // Spring Security 필터 체인에서 GenericFilterBean 을 사용하여 JWT 인증 필터를 추가.
+public class JwtFilter extends GenericFilterBean {
+
     private final TokenProvider tokenProvider;
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
@@ -32,26 +35,23 @@ public class JwtFilter extends GenericFilterBean { // Spring Security 필터 체
         try {
             if (StringUtils.hasText(token) && tokenProvider.isValidToken(token)) {
                 Authentication authentication = tokenProvider.getAuthentication(token);
-                // 유효한 토큰이라면 SecurityContextHolder 에 인증 정보 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
-            // Filter 는 사용자 정의 예외처리를 할 수 없음
             HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             httpResponse.setContentType("application/json");
             ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), e.getMessage(), token);
 
             JavaTimeModule javaTimeModule = new JavaTimeModule();
-            javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"))); // LocalDateTime.now() 직렬화 시 문제 해결
+            javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS")));
             String json = new ObjectMapper().registerModule(javaTimeModule).writeValueAsString(errorDetails);
 
             httpResponse.getWriter().write(json);
         }
     }
 
-    // Request Header 에서 토큰 정보를 추출
     private String extractTokenFromRequestHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         return StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ") ? bearerToken.substring(7) : null;

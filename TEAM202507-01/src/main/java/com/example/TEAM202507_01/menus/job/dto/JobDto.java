@@ -1,25 +1,34 @@
 package com.example.TEAM202507_01.menus.job.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-@Data
-@Builder
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class JobDto {
-    private Long id;                // 게시물 ID
-    private String category;        // 카테고리
-    private String title;           // 제목
-    private Long companyId;         // 회사 ID
-    private String description;     // 내용
-    private String careerLevel;     // 경력
-    private String education;       // 학력
-    private LocalDate deadline;     // 마감일
-    private Integer isActive;       // 마감 여부 (SQL: IS_ACTIVATE)
-    private LocalDateTime createdAt;// 작성일
+    private Long id;
+    private String category;
+    private String title;
+    private String companyName;
+    private String companyType;
+    private String description;
+
+    // DB 컬럼명: CAREER_LEVEL -> 프론트엔드: career
+    private String careerLevel;
+
+    private String education;
+    private String deadline;
+
+    // 🚨 핵심 유지: DB의 link 데이터를 프론트엔드에선 'url'로 인식하게 함
+    @JsonProperty("url")
+    private String link;
+
+    private int isActive;
+
+    // 프론트엔드 호환용 Getter (careerLevel을 career로 내보냄)
+    public String getCareer() {
+        return careerLevel;
+    }
 }

@@ -53,6 +53,12 @@ public class UserServiceImpl implements UserService {
             return tokenProvider.createToken(authentication);
 
         } catch (Exception ex) {
+            // 🔥 [추가] 진짜 에러 원인을 콘솔에 출력!
+            ex.printStackTrace();
+
+            // (선택) 로그가 있다면 로그로 출력
+            // log.error("로그인 실패 원인: ", ex);
+
             throw new BadCredentialsException(errorMessagePropertySource.getBadCredentials());
         }
     }
@@ -73,6 +79,10 @@ public class UserServiceImpl implements UserService {
         // 3. Oracle DB 저장
         userMapper.save(user);
         // (이미 userDto.getUserId()에 값이 있으므로 selectKey 필요 없음)
+
+        // 4. 🔥 [추가] 권한 정보 저장 (USER_AUTH 테이블)
+        // 여기서 "ROLE_USER"라는 명찰을 강제로 달아줍니다.
+        userMapper.saveAuthority(user.getLoginId(), "ROLE_USER");
     }
 
     @Override

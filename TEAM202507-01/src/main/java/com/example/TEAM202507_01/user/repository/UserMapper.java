@@ -3,6 +3,8 @@ package com.example.TEAM202507_01.user.repository;
 import com.example.TEAM202507_01.user.dto.CreateUserDto;
 import com.example.TEAM202507_01.user.dto.UserDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +16,10 @@ public interface UserMapper {
 
     // 2. 회원 상세 조회 (로그인 ID로 조회)
     UserDto findByLoginId(String loginId);
+
+    // 🔥 [추가] 권한 저장 메서드
+    // 파라미터로 아이디(loginId)와 권한명(authName)을 받습니다.
+    void saveAuthority(@Param("loginId") String loginId, @Param("authName") String authName);
 
     // 4. 회원가입 (Insert)
     void save(CreateUserDto user);

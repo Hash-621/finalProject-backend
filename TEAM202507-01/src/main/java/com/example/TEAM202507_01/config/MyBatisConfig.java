@@ -37,6 +37,10 @@ public class MyBatisConfig {
         configuration.setMapUnderscoreToCamelCase(true);
         sessionFactory.setConfiguration(configuration);
 
+        // 🔥 [추가] TypeHandler가 있는 패키지 위치를 알려줍니다.
+        // 이걸 추가하면 XML에서 패키지명을 다 안 쓰고 클래스 이름만 써도 됩니다.
+        sessionFactory.setTypeHandlersPackage("com.example.TEAM202507_01.common.handler");
+
         return sessionFactory.getObject();
     }
 }

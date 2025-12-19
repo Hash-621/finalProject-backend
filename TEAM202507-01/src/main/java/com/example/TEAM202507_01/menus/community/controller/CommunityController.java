@@ -1,56 +1,102 @@
 package com.example.TEAM202507_01.menus.community.controller;
 
+import com.example.TEAM202507_01.alramo.service.AlramoService;
+import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
-import com.example.TEAM202507_01.menus.community.dto.PostDto;
 import com.example.TEAM202507_01.menus.community.service.CommunityService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
-@RestController // 1. JSON 데이터를 반환하는 컨트롤러
-@RequiredArgsConstructor // 2. 서비스(Service) 자동 주입
-@RequestMapping("/api/v1/community") // 3. 기본 URL 경로
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/community")
 public class CommunityController {
 
     private final CommunityService communityService;
+    private final AlramoService alramoService;
 
-    // 1. 목록 조회
-    @GetMapping
-    public ResponseEntity<List<CommunityDto>> getAllCommunityList() {
-        return ResponseEntity.ok(communityService.findAll());
+    // ==========================================
+    // 📢 1. 자유게시판 (Free Board)
+    // ==========================================
+    @GetMapping("/free")
+    public ResponseEntity<List<CommunityDto>> getFreeBoardList() {
+        log.info("📡 [GET] /api/v1/community/free 요청 발생");
+        return ResponseEntity.ok(communityService.findPostsByCategory("FREE"));
     }
 
-    // 2. 상세 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<CommunityDto> getCommunityDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(communityService.findById(id));
+    @PostMapping("/free")
+    public ResponseEntity<?> saveFreePost(@RequestBody CommunityDto dto) {
+        log.info("📝 [POST] 자유게시판 글 작성 요청: {}", dto.getTitle());
+        dto.setCategory("FREE");
+        communityService.savePost(dto);
+        alramoService.sendNewPostNotification(dto.getTitle());
+        return ResponseEntity.ok("자유게시판 저장 완료");
     }
 
-    // 3. 등록 (POST)
-    @PostMapping
-    public ResponseEntity<CommunityDto> createCommunity(@RequestBody PostDto postDto) {
-        // DTO -> Entity 변환
-        CommunityDto community = CommunityDto.builder()
-                .id(postDto.getId())
-                .userId(postDto.getUserId())    // ★ 작성자 ID 추가 (DB 저장 시 필수)
-                .category(postDto.getCategory())
-                .title(postDto.getTitle())
-                .content(postDto.getContent())  // ★ 수정됨: 제목이 아니라 내용을 넣어야 함
-                .viewCount(0L)                  // 조회수 초기화
-                .build();
-
-        CommunityDto savedCommunity = communityService.save(community);
-
-
-        return ResponseEntity.ok(savedCommunity);
+    // ==========================================
+    // 👍 2. 추천게시판 (Recommend Board)
+    // ==========================================
+    @GetMapping("/recommend")
+    public ResponseEntity<List<CommunityDto>> getRecommendBoardList() {
+        log.info("📡 [GET] /api/v1/community/recommend 요청 발생");
+        return ResponseEntity.ok(communityService.findPostsByCategory("RECOMMEND"));
     }
 
-    // 4. 삭제 (DELETE)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCommunity(@PathVariable Long id) {
-        communityService.delete(id);
-        return ResponseEntity.ok("게시글 삭제 성공");
+    @PostMapping("/recommend")
+    public ResponseEntity<?> saveRecommendPost(@RequestBody CommunityDto dto) {
+        log.info("📝 [POST] 추천게시판 글 작성 요청: {}", dto.getTitle());
+        dto.setCategory("RECOMMEND");
+        communityService.savePost(dto);
+        return ResponseEntity.ok("추천게시판 저장 완료");
+    }
+
+    // ==========================================
+    // 📝 3. 게시글 상세 조회 (공통)
+    // ==========================================
+    @GetMapping("/post/{id}")
+    public ResponseEntity<CommunityDto> getPostDetail(@PathVariable Long id) {
+        log.info("📡 상세조회 요청 ID: {}", id);
+        return ResponseEntity.ok(communityService.findPostById(id));
+    }
+
+    // (구버전 호환용 - 필요 없다면 삭제 가능)
+    @GetMapping("/free/{id}")
+    public ResponseEntity<CommunityDto> getFreePostDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(communityService.findPostById(id));
+    }
+
+    // ==========================================
+    // 💬 4. 댓글 (Comment) 관련 매핑
+    // ==========================================
+
+    // 댓글 조회
+    @GetMapping("/comments/{postId}")
+    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
+        return ResponseEntity.ok(communityService.findCommentsByPostId(postId));
+    }
+
+    // 댓글 작성
+    @PostMapping("/comments")
+    public ResponseEntity<?> saveComment(@RequestBody CommentDto dto) {
+        try {
+            communityService.saveComment(dto);
+            return ResponseEntity.ok("댓글 등록 성공");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 댓글 삭제
+    @PostMapping("/comments/delete")
+    public ResponseEntity<?> deleteComment(@RequestBody Map<String, Long> payload) {
+        Long id = payload.get("id");
+        communityService.deleteComment(id);
+        return ResponseEntity.ok("댓글 삭제 성공");
     }
 }

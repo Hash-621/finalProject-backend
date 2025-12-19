@@ -1,6 +1,7 @@
 package com.example.TEAM202507_01.menus.hospital.service;
 
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalDto;
+import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
 import com.example.TEAM202507_01.menus.hospital.repository.HospitalMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,11 @@ public class HospitalServiceImpl implements HospitalService {
         // 4. [collect]: 변환된 데이터들을 다시 모아서 새로운 'List'로 만듬
     }
 
+    @Override
+    public List<HospitalMapDto> findInfo() {
+        return hospitalMapper.findInfo();
+        // DB에 다녀옵니다.
+    }
     // ==========================================
     // 2. 상세 조회
     // ==========================================
@@ -100,7 +106,10 @@ public class HospitalServiceImpl implements HospitalService {
                 .id(hospital.getId())
                 .category(hospital.getCategory())
                 .name(hospital.getName())
-                // ... (나머지 필드 복사)
+                .treatCategory(hospital.getTreatCategory())
+                .address(hospital.getAddress())
+                .tel(hospital.getTel())
+                .editDate(hospital.getEditDate())
                 .averageRating(averageRating) // 계산된 평점 탑재
                 .reviewCount(reviewCount)     // 계산된 리뷰 수 탑재
                 .build(); // "조립 끝! 객체 내놔."

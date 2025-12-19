@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.TEAM202507_01.user.repository.MyPageMapper">
+
+    <select id="getMyInfo" resultType="com.example.TEAM202507_01.user.dto.MyPageDto">
+        SELECT ID, LOGIN_ID AS loginId, EMAIL, NAME, NICKNAME AS nickname,
+               TO_CHAR(BIRTH_DATE, 'YYYY-MM-DD') AS birthDate, GENDER AS gender
+        FROM USERS WHERE LOGIN_ID = #{userId}
+    </select>
+
+    <update id="updateMyInfo">
+        UPDATE USERS SET NICKNAME = #{nickname}, EMAIL = #{email},
+                         BIRTH_DATE = TO_DATE(#{birthDate}, 'YYYY-MM-DD')
+        WHERE LOGIN_ID = #{id}
+    </update>
+
+    <select id="getMyPosts" resultType="map">
+        SELECT ID AS "targetId", TITLE AS "title", '자유게시판' AS "category",
+               TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS "createdAt"
+        FROM POSTS WHERE USER_ID = #{userId}
+        ORDER BY CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="getMyComments" resultType="map">
+        SELECT ID AS "targetId", TO_CHAR(CONTENT) AS "content", '자유게시판' AS "category",
+               TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS "createdAt"
+        FROM COMMENTS WHERE USER_ID = #{userId}
+        ORDER BY CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="getMyFavorites" resultType="map">
+        SELECT FOV_ID AS "targetId", '즐겨찾기 항목 ' || FOV_ID AS "title",
+               CATEGORY AS "category", '' AS "createdAt"
+        FROM FOV_LIST
+        WHERE USER_ID = #{userId}
+        ORDER BY FOV_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <update id="updatePost">
+        UPDATE POSTS SET TITLE = #{title}, CONTENT = #{content}, UPDATED_AT = SYSDATE
+        WHERE ID = #{id} AND USER_ID = #{userId}
+    </update>
+
+    <update id="updateComment">
+        UPDATE COMMENTS SET CONTENT = #{content}
+        WHERE ID = #{id} AND USER_ID = #{userId}
+    </update>
+
+    <delete id="deletePost">
+        DELETE FROM POSTS WHERE ID = #{id} AND USER_ID = #{userId}
+    </delete>
+
+    <delete id="deleteComment">
+        DELETE FROM COMMENTS WHERE ID = #{id} AND USER_ID = #{userId}
+    </delete>
+
+    <delete id="deleteFavorite">
+        DELETE FROM FOV_LIST WHERE FOV_ID = #{id} AND USER_ID = #{userId}
+    </delete>
+
+</mapper>

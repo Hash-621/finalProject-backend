@@ -4,39 +4,77 @@
 
 <mapper namespace="com.example.TEAM202507_01.user.repository.UserMapper">
 
-    <select id="findAll" resultType="UserDto">
+    <resultMap id="UserWithAuthMap" type="com.example.TEAM202507_01.user.dto.UserDto">
+        <id property="id" column="ID"/>
+        <result property="loginId" column="LOGIN_ID"/>
+        <result property="password" column="PASSWORD"/>
+        <result property="email" column="EMAIL"/>
+        <result property="name" column="name"/>
+        <result property="nickname" column="nickName"/>
+        <result property="birthDate" column="birthdate"/>
+        <result property="gender" column="sex"/>
+        <result property="createdAt" column="createdAt"/>
+
+        <collection property="authorities" ofType="java.lang.String">
+            <result column="authority"/>
+        </collection>
+    </resultMap>
+
+    <select id="findAll" resultType="com.example.TEAM202507_01.user.dto.UserDto">
         SELECT
             ID,
             LOGIN_ID,
             EMAIL,
-            NAME,
-            NICKNAME,
-            BIRTH,
-            SEX,
-            CREATED_AT
+            name,
+            nickName,
+            birthdate,
+            sex AS gender,  createdAt
         FROM USERS
         ORDER BY ID DESC
     </select>
 
-    <select id="findById" resultType="UserDto">
-        SELECT * FROM USERS WHERE LOGIN_ID = #{loginId}
+    <select id="findById" resultType="com.example.TEAM202507_01.user.dto.UserDto">
+        SELECT
+            ID,
+            LOGIN_ID,
+            PASSWORD,
+            EMAIL,
+            name,
+            nickName,
+            birthdate,
+            sex AS gender,
+            createdAt
+        FROM USERS
+        WHERE LOGIN_ID = #{loginId}
     </select>
 
-    <select id="findByLoginId" resultType="UserDto">
-        SELECT * FROM USERS WHERE LOGIN_ID = #{loginId}
+    <select id="findByLoginId" resultMap="UserWithAuthMap">
+        SELECT
+            U.ID,
+            U.LOGIN_ID,
+            U.PASSWORD,
+            U.EMAIL,
+            U.name,
+            U.nickName,
+            U.birthdate,
+            U.sex,
+            U.createdAt,
+            A.authority
+        FROM USERS U
+                 LEFT JOIN USER_AUTH A ON U.ID = A.ID  WHERE U.LOGIN_ID = #{loginId}
     </select>
 
-    <insert id="save" parameterType="UserDto">
+    <insert id="save" parameterType="com.example.TEAM202507_01.user.dto.UserDto">
         INSERT INTO USERS (
             ID,
             LOGIN_ID,
             PASSWORD,
             EMAIL,
-            NAME,
-            NICKNAME,
-            BIRTH,
-            SEX,
-            CREATED_AT
+            name,
+            nickName,
+            birthdate,
+            sex,
+            createdAt
         ) VALUES (
                      #{id},
                      #{loginId},
@@ -50,18 +88,26 @@
                  )
     </insert>
 
-    <update id="update" parameterType="UserDto">
+    <insert id="saveAuthority">
+        INSERT INTO USER_AUTH (
+            ID,
+            authority
+        ) VALUES (
+                     #{id},         #{authorities} )
+    </insert>
+
+    <update id="update" parameterType="com.example.TEAM202507_01.user.dto.UserDto">
         UPDATE USERS
         SET
             PASSWORD = #{password},
             EMAIL = #{email},
-            NAME = #{name},
-            NICKNAME = #{nickname},
-            BIRTH = #{birthDate}
+            name = #{name},
+            nickName = #{nickname},
+            birthdate = #{birthDate}
         WHERE LOGIN_ID = #{loginId}
     </update>
 
-    <delete id="delete" >
+    <delete id="delete">
         DELETE FROM USERS WHERE LOGIN_ID = #{loginId}
     </delete>
 

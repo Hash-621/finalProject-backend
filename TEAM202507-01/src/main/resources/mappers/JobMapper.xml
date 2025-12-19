@@ -1,73 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.TEAM202507_01.menus.job.repository.JobMapper">
 
-    <select id="findAll" resultType="JobDto">
-        SELECT
-            ID,
-            INDUSTRY_ID,
-            TITLE,
-            COMPANY_NAME,
-            CAREER_LEVEL,
-            DEADLINE,
-            IS_ACTIVE,
-            CREATED_AT
-        FROM JOB_POSTS
+    <select id="findAll" resultType="com.example.TEAM202507_01.menus.job.entity.JobPost">
+        SELECT * FROM JOB_POST
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (TITLE LIKE '%' || #{keyword} || '%'
+                OR COMPANY_NAME LIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="career != null and career != ''">
+                AND CAREER_LEVEL LIKE '%' || #{career} || '%'
+            </if>
+            <if test="education != null and education != ''">
+                AND EDUCATION LIKE '%' || #{education} || '%'
+            </if>
+        </where>
         ORDER BY ID DESC
     </select>
 
-    <select id="findById" parameterType="Long" resultType="JobDto">
-        SELECT * FROM JOB_POSTS
-        WHERE ID = #{id}
+    <select id="findById" resultType="com.example.TEAM202507_01.menus.job.entity.JobPost">
+        SELECT * FROM JOB_POST WHERE ID = #{id}
     </select>
 
-    <insert id="save" parameterType="JobDto" useGeneratedKeys="true" keyProperty="id" keyColumn="ID">
-        INSERT INTO JOB_POSTS (
-            INDUSTRY_ID,
-            TITLE,
-            COMPANY_NAME,
-            COMPANY_ADDRESS,
-            COMPANY_PHONE,
-            DESCRIPTION,
-            CAREER_LEVEL,
-            EDUCATION,
-            DEADLINE,
-            IS_ACTIVE,
-            CREATED_AT
+    <insert id="insertJobPost" parameterType="com.example.TEAM202507_01.menus.job.entity.JobPost">
+        INSERT INTO JOB_POST (
+            CATEGORY, TITLE, COMPANY_NAME, COMPANY_TYPE, DESCRIPTION,
+            CAREER_LEVEL, EDUCATION, DEADLINE, LINK, IS_ACTIVE, CREATED_AT
         ) VALUES (
-                     #{industryId},
-                     #{title},
-                     #{companyName},
-                     #{companyAddress},
-                     #{companyPhone},
-                     #{description},
-                     #{careerLevel},
-                     #{education},
-                     #{deadline},
-                     1, SYSDATE
+                     #{category}, #{title}, #{companyName}, #{companyType}, #{description},
+                     #{careerLevel}, #{education}, #{deadline}, #{link}, #{isActive}, SYSDATE
                  )
     </insert>
 
-    <update id="update" parameterType="JobDto">
-        UPDATE JOB_POSTS
-        SET
-            TITLE = #{title},
+    <update id="updateJobPost" parameterType="com.example.TEAM202507_01.menus.job.entity.JobPost">
+        UPDATE JOB_POST
+        SET TITLE = #{title},
             COMPANY_NAME = #{companyName},
-            COMPANY_ADDRESS = #{companyAddress},
-            COMPANY_PHONE = #{companyPhone},
-            DESCRIPTION = #{description},
-            CAREER_LEVEL = #{careerLevel},
-            EDUCATION = #{education},
             DEADLINE = #{deadline},
             IS_ACTIVE = #{isActive}
         WHERE ID = #{id}
     </update>
 
-    <delete id="delete" parameterType="Long">
-        DELETE FROM JOB_POSTS
-        WHERE ID = #{id}
-    </delete>
+    <select id="countByCompanyAndTitle" resultType="int">
+        SELECT COUNT(*) FROM JOB_POST
+        WHERE COMPANY_NAME = #{companyName} AND TITLE = #{title}
+    </select>
 
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM JOB_POST
+    </select>
+
+
+    <select id="findAllSearch" parameterType="com.example.TEAM202507_01.menus.job.entity.JobPost">
+        SELECT * FROM JOB_POST
+        ORDER BY ID DESC
+    </select>
 </mapper>

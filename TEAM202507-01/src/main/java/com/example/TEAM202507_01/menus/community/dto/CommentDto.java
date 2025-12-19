@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +21,5 @@ public class CommentDto {
     private String content; // 댓글의 내용
     private Integer isDelete; //삭제 여부 스위치
     private LocalDateTime createdAt; // 작성 시간
+    private Long parentId;
 }

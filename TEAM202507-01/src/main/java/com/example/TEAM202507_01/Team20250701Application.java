@@ -1,12 +1,9 @@
 package com.example.TEAM202507_01;
 
-import com.example.TEAM202507_01.search.repository.SearchRepository;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 
 @MapperScan(
         basePackages = "com.example.TEAM202507_01",

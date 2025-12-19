@@ -6,6 +6,6 @@ import java.util.List;
 public interface NewsService {
     List<NewsDto> findAll();
     NewsDto findById(Long id);
-    NewsDto save(NewsDto news);
+    void save(NewsDto news);
     void delete(Long id);
 }

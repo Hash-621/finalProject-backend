@@ -1,6 +1,8 @@
 package com.example.TEAM202507_01.menus.community.dto; // ★ 패키지명 확인!
 
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDateTime;
 
@@ -20,4 +22,6 @@ public class CommunityDto {
     private String category;
     private LocalDateTime updatedAt;
     private Long viewCount;
+    private String userNickname;
+
 }

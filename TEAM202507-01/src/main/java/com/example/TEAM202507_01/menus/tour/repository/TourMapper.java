@@ -21,4 +21,5 @@ public interface TourMapper {
 
     // 5. 삭제 (Delete)
     void delete(Long id);
+
 }

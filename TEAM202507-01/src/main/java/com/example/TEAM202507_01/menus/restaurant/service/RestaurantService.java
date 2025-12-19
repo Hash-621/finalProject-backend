@@ -8,4 +8,6 @@ public interface RestaurantService {
     RestaurantDto findById(Long id);
     RestaurantDto save(RestaurantDto restaurant);
     void delete(Long id);
+    // 🔥 [추가] 외부 API 데이터 동기화 메서드
+    String syncRestaurantData();
 }

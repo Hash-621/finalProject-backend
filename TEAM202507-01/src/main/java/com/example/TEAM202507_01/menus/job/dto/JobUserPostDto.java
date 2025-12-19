@@ -1,25 +1,25 @@
 package com.example.TEAM202507_01.menus.job.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.*;
 
-@Data
-@Builder
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JobUserPostDto {
-    private Long id;                // ★ 수정됨: String -> Long
-    private String title;
-    private Long companyId;
+@Builder
+public class JobUserPostDto { // 👈 클래스 이름 확인하세요! (Dto)
+    private Long id;
+    private String category;
     private String userId;
+    private String title;
+    private String companyName;
+    private String companyType;
     private String description;
     private String careerLevel;
     private String education;
-    private LocalDate deadline;
-    private Integer isActive;
-    private LocalDateTime createdAt;
+
+    // 프론트엔드와 주고받을 때는 String이 가장 안전합니다.
+    private String deadline;
+    private String createdAt;
+
+    private int isActive;
 }

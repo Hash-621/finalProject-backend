@@ -2,6 +2,8 @@ package com.example.TEAM202507_01.menus.community.repository;
 
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 @Mapper
@@ -17,4 +19,6 @@ public interface CommunityMapper {
     void update(CommunityDto community);
     void delete(Long id);
     void increaseViewCount(Long id);
+
+    List<CommunityDto> findByCategory(@Param("category") String category);
 }

@@ -2,6 +2,8 @@ package com.example.TEAM202507_01.menus.restaurant.repository;
 
 import com.example.TEAM202507_01.menus.restaurant.dto.RestaurantDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 @Mapper
@@ -13,6 +15,8 @@ public interface RestaurantMapper {
     // 2. 상세 조회
     RestaurantDto findById(Long id);
 
+    RestaurantDto findNameById(Long id);
+
     // 3. 등록 (Insert)
     void save(RestaurantDto restaurant);
 
@@ -21,4 +25,9 @@ public interface RestaurantMapper {
 
     // 5. 삭제 (Delete)
     void delete(Long id);
+
+    void updateImage(@Param("imageId") Long id, @Param("imagePath") String imagePath);
+    List<RestaurantDto> findAllWithUrl();
+
+
 }

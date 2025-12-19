@@ -1,6 +1,7 @@
 package com.example.TEAM202507_01.menus.hospital.repository; // 패키지명 확인
 
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalDto;
+import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
@@ -9,6 +10,8 @@ public interface HospitalMapper {
 
     // 1. 병원 전체 목록 조회
     List<HospitalDto> findAll();
+
+    List<HospitalMapDto> findInfo();
 
     // 2. 병원 상세 조회
     HospitalDto findById(Long id);

@@ -1,6 +1,7 @@
 package com.example.TEAM202507_01.menus.hospital.controller;
 
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalDto;
+import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
 import com.example.TEAM202507_01.menus.hospital.service.HospitalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,12 @@ public class HospitalController {
     public ResponseEntity<List<HospitalDto>> getHospitalList() {
         // 서비스가 DTO 리스트를 반환하므로, 컨트롤러도 DTO 리스트를 반환해야 합니다.
         return ResponseEntity.ok(hospitalService.findAll());
+    }
+
+    @GetMapping("/map")
+    public ResponseEntity<List<HospitalMapDto>> getHospitalInfo() {
+        // 서비스가 DTO 리스트를 반환하므로, 컨트롤러도 DTO 리스트를 반환해야 합니다.
+        return ResponseEntity.ok(hospitalService.findInfo());
     }
 
     // 2. 상세 조회 (GET)

@@ -1,6 +1,9 @@
 package com.example.TEAM202507_01.menus.news.dto;
 
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
 import java.time.LocalDateTime;
 
 @Getter @Setter
