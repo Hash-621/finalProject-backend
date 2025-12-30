@@ -14,13 +14,15 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
-
+    // GET /api/v1/job/crawl 요청을 받음.
+    // 검색 조건(keyword, career, education)을 쿼리 파라미터(?keyword=...)로 받음.
     @GetMapping("/crawl")
-    public ResponseEntity<List<JobDto>> getJobs( // 👈 JobPostDto -> JobDto
+    public ResponseEntity<List<JobDto>> getJobs(
                                                  @RequestParam(value = "keyword", required = false) String keyword,
                                                  @RequestParam(value = "career", required = false) String career,
                                                  @RequestParam(value = "education", required = false) String education
     ) {
+        // 서비스를 호출해서 결과를 받아 그대로 응답함.
         return ResponseEntity.ok(jobService.findAllJobPosts(keyword, career, education));
     }
 }

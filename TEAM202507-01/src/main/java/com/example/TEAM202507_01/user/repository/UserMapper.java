@@ -1,7 +1,6 @@
 package com.example.TEAM202507_01.user.repository;
 
-import com.example.TEAM202507_01.user.dto.CreateUserDto;
-import com.example.TEAM202507_01.user.dto.UserDto;
+import com.example.TEAM202507_01.user.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -32,4 +31,12 @@ public interface UserMapper {
 
     // 7. 아이디 중복 체크
     int countByLoginId(String loginId);
+
+    String findRostId(FindUserIdDto findUserIdDto);
+
+    void insertUser(UserDto userDto);
+
+    int resetPw(ResetPasswordDto resetPasswordDto);
+
+    void updatePw(UpdatePwDto updatePwDto);
 }

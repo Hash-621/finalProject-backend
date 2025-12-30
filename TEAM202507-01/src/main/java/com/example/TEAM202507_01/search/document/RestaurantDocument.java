@@ -10,47 +10,48 @@ import java.util.List;
 
 @Data
 @Builder
-@Document(indexName = "restaurant")
+@Document(indexName = "restaurant") // 'restaurant' 인덱스 사용
 public class RestaurantDocument {
 
     @Id
-    private Long id;
+    private Long id; // 식당 ID
 
-    // 1. 검색이 되어야 하는 필드들 (Text + nori 분석기)
+    // [검색용 필드 - Text + nori]
+    // 사용자가 "대전 맛집" 이라고 검색했을 때 걸려야 하는 필드들임.
     @Field(type = FieldType.Text, analyzer = "nori")
-    private String name;            // 가게 이름 (검색 1순위)
+    private String name;            // 가게 이름 (가장 중요)
 
     @Field(type = FieldType.Text, analyzer = "nori")
-    private String address;         // 주소 (검색 2순위 "유성구 맛집")
+    private String address;         // 주소 (예: "유성구" 검색 시 매칭)
 
     @Field(type = FieldType.Text, analyzer = "nori")
     private String bestMenu;        // 대표 메뉴
 
+    // List<String>인데 Text 타입인 이유:
+    // 메뉴 하나하나(예: "짜장면", "짬뽕")를 검색 엔진이 읽어서 검색 가능하게 만들기 위함임.
     @Field(type = FieldType.Text, analyzer = "nori")
-    private List<String> menu;      // 🔥 [중요] 메뉴 리스트 (예: "짜장면" 검색 시 걸리게)
+    private List<String> menu;
 
     @Field(type = FieldType.Text, analyzer = "nori")
-    private List<String> menuDetail;      // 메뉴 상세설명도 검색하고 싶으면 Text
+    private List<String> menuDetail; // 메뉴 설명
 
     @Field(type = FieldType.Text, analyzer = "nori")
-    private String restCategory;    // '한식', '중식' (카테고리 필터용)
+    private String restCategory;    // '한식', '중식' 등
 
-    // 2. 검색보단 '필터링'이나 '그냥 보여주기용' (Keyword)
-
+    // [필터/출력용 필드 - Keyword]
+    // 검색보다는 화면에 보여주거나, 정확히 일치하는 값으로 거를 때 사용함.
     @Field(type = FieldType.Keyword)
-    private String phone;           // 전화번호 (검색 안함, 보여주기용)
+    private String phone;           // 전화번호 (부분 검색 안 함)
 
     @Field(type = FieldType.Keyword)
     private String openTime;        // 영업시간
 
     @Field(type = FieldType.Keyword)
-    private List<String> price;     // 가격 (보여주기용)
+    private List<String> price;     // 가격 정보
 
     @Field(type = FieldType.Keyword)
-    private String url;             // 네이버 지도 링크
+    private String url;             // 링크
 
     @Field(type = FieldType.Keyword)
-    private String imagePath;       // 썸네일 이미지
-
-    // addressDetail(상세주소)은 검색 가치가 낮아서 뺐지만, 필요하면 Keyword로 넣으세요.
+    private String imagePath;       // 이미지 경로 (분석 불필요)
 }

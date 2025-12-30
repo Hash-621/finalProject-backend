@@ -9,17 +9,22 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDateTime;
 
-@Data //getter setter tostring()같은 필수 기능들을 자동으로 만들어줌
-@Builder //객체를 만들때 이름표를 붙여서 쉽게 만들수 있게 해주는 기능
-@NoArgsConstructor //빈깡통 기본생성자를 만들어줌
-@AllArgsConstructor // 모든 필드를 다 채울수있는 꽉 찬 생성자를 만듬
+@Data // @Getter, @Setter, @ToString 등을 합친 종합 선물 세트.
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentDto {
-    private Long id; //댓글 주민번호
-    private Long postId; //어느 게시글에 달린 댓글인지 나타내는 번호
-    private String userId; //고유 id
-    private String userNickname; //화면에 보여줄 작성자 닉네임
-    private String content; // 댓글의 내용
-    private Integer isDelete; //삭제 여부 스위치
-    private LocalDateTime createdAt; // 작성 시간
-    private Long parentId;
+    private Long id;            // 댓글 고유 번호 (PK).
+    private Long postId;        // [핵심] 어떤 게시글에 달린 댓글인지 연결 (FK).
+    private String userId;      // 댓글 작성자 아이디.
+    private String userNickname;// 댓글 작성자 닉네임 (화면 표시용).
+    private String content;     // 댓글 내용.
+
+    // 댓글을 진짜 삭제하면 DB에서 사라지지만, 보통은 '삭제된 댓글입니다'라고 띄우기 위해 상태값만 바꿈.
+    // 0: 정상, 1: 삭제됨.
+    private Integer isDelete;
+
+    private LocalDateTime createdAt; // 작성 시간.
+    private Long parentId;      // [대댓글] 이 댓글의 부모 댓글 ID (null이면 일반 댓글).
 }
+

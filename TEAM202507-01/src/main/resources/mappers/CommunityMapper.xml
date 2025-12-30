@@ -1,67 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.TEAM202507_01.menus.community.repository.CommunityMapper">
 
-    <select id="findAll" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+    <select id="selectPostsByCategory" parameterType="String" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
         SELECT
-            P.ID, P.TITLE, P.CONTENT, P.CREATED_AT, P.UPDATED_AT,
-            P.VIEW_COUNT, P.USER_ID, P.CATEGORY,
-            U.NICKNAME AS userNickname
-        FROM POSTS P
-                 LEFT JOIN USERS U ON P.USER_ID = U.LOGIN_ID
-        ORDER BY P.ID DESC
-    </select>
-
-    <select id="findByCategory" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
-        SELECT
-            P.ID, P.TITLE, P.CONTENT, P.CREATED_AT, P.UPDATED_AT,
-            P.VIEW_COUNT, P.USER_ID, P.CATEGORY,
-            U.NICKNAME AS userNickname
-        FROM POSTS P
-                 LEFT JOIN USERS U ON P.USER_ID = U.LOGIN_ID
+            P.ID,
+            P.TITLE,
+            P.CONTENT,
+            P.CATEGORY,
+            P.VIEW_COUNT AS "viewCount",
+            P.CREATED_AT AS "createdAt",
+            U.NICKNAME AS "userNickname",
+            P.USER_ID AS "userId",  (SELECT COUNT(*) FROM COMMENTS C WHERE C.POST_ID = P.ID) AS "commentCount" FROM POSTS P
+                                                                                                                        JOIN USERS U ON P.USER_ID = U.ID
         WHERE P.CATEGORY = #{category}
-        ORDER BY P.ID DESC
+        ORDER BY P.CREATED_AT DESC
     </select>
 
-    <select id="findById" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+    <select id="selectPostById" parameterType="Long" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
         SELECT
-            P.ID, P.TITLE, P.CONTENT, P.CREATED_AT, P.UPDATED_AT,
-            P.VIEW_COUNT, P.USER_ID, P.CATEGORY,
-            U.NICKNAME AS userNickname
-        FROM POSTS P
-                 LEFT JOIN USERS U ON P.USER_ID = U.LOGIN_ID
+            P.ID,
+            P.TITLE,
+            P.CONTENT,
+            P.CATEGORY,
+            P.VIEW_COUNT AS "viewCount",
+            P.CREATED_AT AS "createdAt",
+            U.NICKNAME AS "userNickname",
+            P.USER_ID AS "userId", (SELECT COUNT(*) FROM COMMENTS C WHERE C.POST_ID = P.ID) AS "commentCount" FROM POSTS P
+                                                                                                                       JOIN USERS U ON P.USER_ID = U.ID
         WHERE P.ID = #{id}
     </select>
 
-    <insert id="save" parameterType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
-        <selectKey keyProperty="id" resultType="long" order="BEFORE">
-            SELECT NVL(MAX(ID), 0) + 1 FROM POSTS
-        </selectKey>
-        INSERT INTO POSTS (
-        ID, TITLE, CONTENT, USER_ID, VIEW_COUNT, CREATED_AT, CATEGORY
-        ) VALUES (
-        #{id}, #{title}, #{content}, #{userId}, 0, SYSDATE, #{category}
-        )
+    <insert id="insertPost">
+        INSERT INTO POSTS (USER_ID, CATEGORY, TITLE, CONTENT, VIEW_COUNT, CREATED_AT)
+        VALUES (#{userId}, #{category}, #{title}, #{content}, 0, SYSDATE)
     </insert>
 
-    <update id="update" parameterType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
-        UPDATE POSTS
-        SET TITLE = #{title},
-            CONTENT = #{content},
-            UPDATED_AT = SYSDATE
-        WHERE ID = #{id}
+    <select id="selectCommentsByPostId" parameterType="Long" resultType="com.example.TEAM202507_01.menus.community.dto.CommentDto">
+        SELECT
+            C.ID,
+            C.POST_ID AS "postId",
+            C.CONTENT,
+            C.CREATED_AT AS "createdAt",
+            U.NICKNAME AS "userNickname",
+            C.USER_ID AS "userId"
+        FROM COMMENTS C
+                 JOIN USERS U ON C.USER_ID = U.ID
+        WHERE C.POST_ID = #{postId} AND C.IS_DELETE = 0
+        ORDER BY C.CREATED_AT ASC
+    </select>
+
+    <insert id="insertComment" parameterType="com.example.TEAM202507_01.menus.community.dto.CommentDto">
+        INSERT INTO COMMENTS (ID, POST_ID, USER_ID, CONTENT, IS_DELETE, CREATED_AT)
+        VALUES (comment_seq.NEXTVAL, #{postId}, #{userId}, #{content}, 0, SYSDATE)
+    </insert>
+
+    <update id="deleteComment" parameterType="Long">
+        UPDATE COMMENTS SET IS_DELETE = 1 WHERE ID = #{id}
     </update>
 
-    <delete id="delete">
+    <delete id="deletePost" parameterType="Long">
         DELETE FROM POSTS WHERE ID = #{id}
     </delete>
 
-    <update id="increaseViewCount">
-        UPDATE POSTS SET VIEW_COUNT = VIEW_COUNT + 1 WHERE ID = #{id}
-    </update>
-
-
+    <select id="findAll" resultType="com.example.TEAM202507_01.menus.community.dto.CommunityDto">
+        SELECT
+            ID, TITLE, CONTENT, USER_ID, CATEGORY, VIEW_COUNT, CREATED_AT
+        FROM POSTS
+    </select>
 
 </mapper>

@@ -89,6 +89,21 @@
         WHERE REST_ID = #{id}
     </delete>
 
+    <insert id="setFavorite">
+        INSERT INTO fov_list ()
+        VALUES ()
+    </insert>
+
+
+
+
+
+
+
+
+
+
+
 
     <update id="updateImage" parameterType="map">
         UPDATE restaurant

@@ -22,18 +22,19 @@ public class CommunityPostDocument {
     @Field(type = FieldType.Text, analyzer = "nori")
     private String content;
 
+    // 닉네임으로 검색할 수 있게 Text + nori 분석기 사용
     @Field(type = FieldType.Text, analyzer = "nori")
     private String userNickname; // 닉네임으로 검색 가능하게
 
     // 필터/정렬
     @Field(type = FieldType.Keyword)
-    private String userId;
+    private String userId;    // 특정 유저의 글 모아보기용
 
     @Field(type = FieldType.Keyword)
-    private String category; // 자유, 질문, 정보 등
+    private String category; // 게시판 카테고리 필터
 
     @Field(type = FieldType.Long)
-    private Long viewCount;
+    private Long viewCount;   // 인기순 정렬
 
     @Field(type = FieldType.Date, format = {}, pattern = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
     private LocalDateTime createdAt;

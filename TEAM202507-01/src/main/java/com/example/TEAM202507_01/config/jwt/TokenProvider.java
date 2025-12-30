@@ -85,5 +85,14 @@ public class TokenProvider implements InitializingBean {
 //            throw new Exception(errorMessagePropertySource.getInvalidToken());
 //        }
     }
+
+    public String getLoginId(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject(); // 토큰 만들 때 넣었던 아이디(authentication.getName())값
+    }
 }
 

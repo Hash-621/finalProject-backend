@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 모든 주소(/**)에 대해
         registry.addMapping("/**")
                 // 프론트엔드 주소 허용 (포트 번호 정확히 확인!)
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("http://localhost:3000", "http://192.168.0.96:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true);
     }

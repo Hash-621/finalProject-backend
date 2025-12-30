@@ -14,25 +14,28 @@ import java.util.Map;
 public class CommentFilterService {
 
     // application.properties에 google.api-key가 있어야 합니다.
-    @Value("${google.api-key}")
+    @Value("${google.perspective.api-key}")
     private String apiKey;
 
     private final String API_URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=";
 
     public boolean isToxic(String commentText) {
+        //1.API검사
         if (apiKey == null || apiKey.isEmpty()) {
             log.warn("⚠️ Google API Key가 설정되지 않았습니다. 필터링을 건너뜁니다.");
-            return false;
+            return false; // 키가 없으면 그냥 통과시킴 (기능 마비 방지).
         }
-
+        // 2. 구글 API 호출을 위한 도구 생성
         RestTemplate restTemplate = new RestTemplate();
-        String url = API_URL + apiKey;
+        // 구글 API 주소에 내 키를 붙여서 요청 주소를 만듦.
+        String url = API_URL + apiKey;  // 호출할 주소 완성.
 
-        // 요청 JSON 바디 구성
+        // 3. 요청 데이터(JSON) 만들기 (Map 사용)
+        // [구조 분석] 구글이 요구하는 복잡한 JSON 형식(Map 구조)을 만드는 과정임.
         Map<String, Object> request = new HashMap<>();
 
         Map<String, String> comment = new HashMap<>();
-        comment.put("text", commentText);
+        comment.put("text", commentText); // 검사할 텍스트 삽입.
         request.put("comment", comment);
 
         Map<String, Object> requestedAttributes = new HashMap<>();
@@ -40,7 +43,7 @@ public class CommentFilterService {
         request.put("requestedAttributes", requestedAttributes);
 
         try {
-            // 구글 API 호출
+            // RestTemplate이라는 도구로 구글 서버에 편지(POST 요청)를 보냄.
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
 
             // 응답 파싱
@@ -49,6 +52,9 @@ public class CommentFilterService {
                 Map<String, Object> attributeScores = (Map<String, Object>) body.get("attributeScores");
                 Map<String, Object> toxicity = (Map<String, Object>) attributeScores.get("TOXICITY");
                 Map<String, Object> summaryScore = (Map<String, Object>) toxicity.get("summaryScore");
+
+                // 구글의 답장(JSON)을 한 겹 한 겹 까서 점수(score)를 찾아냄.
+                // body -> attributeScores -> TOXICITY -> summaryScore -> value
                 Double score = (Double) summaryScore.get("value");
 
                 log.info("🤖 댓글 욕설 확률: {} ({})", score, commentText);

@@ -1,110 +1,93 @@
 package com.example.TEAM202507_01.menus.community.service;
 
-import com.example.TEAM202507_01.common.service.CleanBotService; // 🟢 import 추가
 import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
-import com.example.TEAM202507_01.menus.community.repository.CommentMapper;
 import com.example.TEAM202507_01.menus.community.repository.CommunityMapper;
+import com.example.TEAM202507_01.user.repository.MyPageMapper;
+// ★ 아래 import 경로가 위에서 만든 파일 경로와 일치해야 에러가 사라집니다.
+import com.example.TEAM202507_01.cleanbot.service.CleanBotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CommunityServiceImpl implements CommunityService {
 
     private final CommunityMapper communityMapper;
-    private final CommentMapper commentMapper;
-    private final CleanBotService cleanBotService; // 🟢 클린봇 서비스 주입
-
-    // ==========================================
-    // 📢 게시글 (Post) 관련 기능
-    // ==========================================
+    private final MyPageMapper myPageMapper;
+    private final CleanBotService cleanBotService; // 이제 인식될 것입니다.
 
     @Override
-    @Transactional(readOnly = true)
     public List<CommunityDto> findAllPosts() {
-        return communityMapper.findAll();
+        return new ArrayList<>();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<CommunityDto> findPostsByCategory(String category) {
-        return communityMapper.findByCategory(category);
+        return communityMapper.selectPostsByCategory(category);
     }
 
     @Override
     public CommunityDto findPostById(Long id) {
-        communityMapper.increaseViewCount(id);
-
-        CommunityDto post = communityMapper.findById(id);
-        if (post == null) {
-            throw new RuntimeException("게시글을 찾을 수 없습니다. ID: " + id);
-        }
-        return post;
+        return communityMapper.selectPostById(id);
     }
 
     @Override
+    @Transactional
     public void savePost(CommunityDto dto) {
-        // 🟢 1. 욕설 필터링 적용 (제목, 내용)
-        // 욕설이 포함되어 있으면 여기서 예외가 발생하여 저장이 중단됩니다.
-        cleanBotService.checkContent(dto.getTitle());
-        cleanBotService.checkContent(dto.getContent());
-
-        // 2. 카테고리 누락 방지
-        if (dto.getCategory() == null || dto.getCategory().trim().isEmpty()) {
-            dto.setCategory("FREE");
+        if (cleanBotService != null) {
+            cleanBotService.checkContent(dto.getTitle());
+            cleanBotService.checkContent(dto.getContent());
         }
-
-        // 3. 저장 또는 수정
-        if (dto.getId() == null) {
-            log.info("새 게시글 등록: {}", dto.getTitle());
-            communityMapper.save(dto);
-        } else {
-            log.info("게시글 수정: {}", dto.getId());
-            communityMapper.update(dto);
-        }
+        communityMapper.insertPost(dto);
     }
 
     @Override
+    @Transactional
     public void deletePost(Long id) {
-        log.info("게시글 삭제: {}", id);
-        communityMapper.delete(id);
+        communityMapper.deletePost(id);
     }
 
-    // ==========================================
-    // 💬 댓글 (Comment) 관련 기능
-    // ==========================================
-
     @Override
-    @Transactional(readOnly = true)
     public List<CommentDto> findCommentsByPostId(Long postId) {
-        return commentMapper.findAllByPostId(postId);
+        return communityMapper.selectCommentsByPostId(postId);
     }
 
     @Override
+    @Transactional
     public void saveComment(CommentDto dto) {
-        // 🟢 1. 욕설 필터링 적용 (댓글 내용)
-        cleanBotService.checkContent(dto.getContent());
-
-        // 2. 저장 또는 수정
-        if (dto.getId() == null) {
-            log.info("새 댓글 등록 - 게시글ID: {}", dto.getPostId());
-            commentMapper.save(dto);
-        } else {
-            log.info("댓글 수정 - 댓글ID: {}", dto.getId());
-            commentMapper.update(dto);
+        // 1. 욕설 필터링
+        if (cleanBotService != null) {
+            cleanBotService.checkContent(dto.getContent());
         }
+
+        // 2. 로그인 ID -> UUID 변환
+        String loginId = dto.getUserId();
+        log.info("🔍 댓글 작성 시도 - 로그인ID: {}", loginId);
+
+        String uuid = myPageMapper.findUuidByLoginId(loginId);
+
+        if (uuid == null) {
+            log.error("❌ 유저 정보를 찾을 수 없습니다. loginId: {}", loginId);
+            throw new RuntimeException("존재하지 않는 사용자입니다.");
+        }
+
+        log.info("✅ UUID 변환 성공: {} -> {}", loginId, uuid);
+
+        // 3. 변환된 UUID로 교체 후 저장
+        dto.setUserId(uuid);
+        communityMapper.insertComment(dto);
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long id) {
-        log.info("댓글 삭제: {}", id);
-        commentMapper.delete(id);
+        communityMapper.deleteComment(id);
     }
 }

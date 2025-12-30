@@ -7,5 +7,6 @@ import java.util.List;
 
 @Mapper
 public interface TourPostMapper {
+    // 모든 게시글을 조회함.
     List<TourPostDto> findAll();
 }

@@ -2,19 +2,25 @@ package com.example.TEAM202507_01.user.service;
 
 import com.example.TEAM202507_01.config.jwt.TokenProvider;
 import com.example.TEAM202507_01.config.property.ErrorMessagePropertySource;
-import com.example.TEAM202507_01.user.dto.CreateUserDto;
-import com.example.TEAM202507_01.user.dto.UserDto;
-import com.example.TEAM202507_01.user.dto.UserSignInDto;
+import com.example.TEAM202507_01.menus.mailgun.service.mailService;
+import com.example.TEAM202507_01.user.dto.*;
 import com.example.TEAM202507_01.user.repository.UserMapper;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,12 +28,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
-
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+    private SecretKey secretKey;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final ErrorMessagePropertySource errorMessagePropertySource;
+    private final mailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final StringRedisTemplate redisTemplate;
+
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -43,13 +59,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String createToken(UserSignInDto signInDto) {
+        // 1. DB에서 해당 아이디의 유저 정보를 직접 가져와봅니다. (Mapper 사용)
         try {
+            // 1. 아이디/비번 토큰 생성
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(signInDto.getLoginId(), signInDto.getPassword());
 
-            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            // 2. 🔥 [수정] 주입받은 매니저로 인증 시도
+            // (이제 SecurityConfig의 PasswordEncoder 설정을 자동으로 인식합니다)
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-            // authentication 객체를 createToken 메소드를 통해서 JWT Token 을 생성
+            // 3. 토큰 생성 및 반환
             return tokenProvider.createToken(authentication);
 
         } catch (Exception ex) {
@@ -65,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void join(CreateUserDto user) {
-        if(userMapper.countByLoginId(user.getLoginId()) > 0){
+        if (userMapper.countByLoginId(user.getLoginId()) > 0) {
             throw new RuntimeException("중복되는 아이디가 이미 있습니다.");
         }
         // 1. UUID 생성 (하이픈 포함된 표준 형식: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
@@ -94,5 +114,72 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(String loginId) {
         userMapper.delete(loginId);
+    }
+
+    @Override
+    public void getTokenForFindID(String addr, String value) {
+        mailService.sendFindIdMail(addr, value);
+        if (redisTemplate.opsForValue().get(addr) != null) {
+            redisTemplate.delete(addr);
+        }
+        redisTemplate.opsForValue().set(addr, value, Duration.ofMinutes(3));
+    }
+
+    @Override
+    public String findUserId(FindUserIdDto findUserIdDto) {
+        String userMail = findUserIdDto.getEmail();
+        String inputToken = findUserIdDto.getToken();
+        try {
+            String token = redisTemplate.opsForValue().get(userMail);
+
+            if (inputToken.isEmpty()) {
+                throw new NullPointerException("token is null");
+            }
+            if (inputToken.equals(token)) {
+                redisTemplate.delete(userMail);
+                return userMapper.findRostId(findUserIdDto);
+            }
+        } catch (NullPointerException e) {
+            if (e.getMessage() != null) {
+                System.err.println("숫자를 입력해주세요");
+                return "빈 토큰";
+            }
+            return "토큰 불일치";
+        } catch (Exception e) {
+            System.err.println("서버 오류 발생" + e.getMessage());
+            return "서버 오류 발생";
+        }
+        return null;
+    }
+
+    @Override
+    public void getResetPw(ResetPasswordDto resetPasswordDto) {
+        int exitCount = userMapper.resetPw(resetPasswordDto);
+        if (exitCount == 1) {
+            String resetToken = UUID.randomUUID().toString();
+            redisTemplate.opsForValue().set(resetPasswordDto.getEmail(), resetToken, Duration.ofMinutes(3));
+            mailService.sendResetPwMail(resetPasswordDto.getEmail(), resetToken);
+        } else if (exitCount > 1) {
+            System.err.println("아이디가 두개 이상 조회됩니다. 관리자에게 문의 하세요");
+        } else {
+            System.err.println("예기치 않은 에러");
+        }
+    }
+
+    @Override
+    public boolean resetPw(String token, String email) {
+        String inner = redisTemplate.opsForValue().get(email);
+        if (token.equals(inner)) {
+            redisTemplate.delete(email);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void updatePw(UpdatePwDto updatePwDto) {
+        updatePwDto.setPassword(passwordEncoder.encode(updatePwDto.getPassword()));
+        userMapper.updatePw(updatePwDto);
     }
 }

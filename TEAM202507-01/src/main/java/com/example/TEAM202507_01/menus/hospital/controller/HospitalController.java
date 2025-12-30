@@ -62,3 +62,37 @@ public class HospitalController {
         return ResponseEntity.ok("병원 삭제 성공");
     }
 }
+
+///전체구조 및 연결 흐름 ///
+
+//1.사용자 (Client):
+// URL: POST /api/v1/hospital
+//Body: { "name": "대전 한국병원", "category": "종합병원", ... }
+
+//2.Controller (HospitalController):
+//createHospital 메서드 작동.
+//JSON을 HospitalDto로 받음
+//hospitalService.save(hospital) 호출
+
+//3.Service (HospitalServiceImpl):
+//save 메서드 작동.
+//ID가 null인지 확인 (새 등록이므로 null임).
+//hospitalMapper.save(hospital) 호출.
+
+//4.Mapper (HospitalMapper + xml):
+//XML의 <insert id="save"> 실행.
+//DB에 INSERT INTO HOSPITALS ... 쿼리 날림.
+//데이터 저장 완료.
+
+//5.Return Path:
+//DB -> Mapper -> Service -> Controller -> 사용자에게 "병원등록 성공" 응답.
+
+//Controller: 프론트엔드와 대화하는 창구.
+
+//Service: 로직을 처리하고 데이터의 형태를 가공(Entity <-> DTO)하는 공장.
+
+//Mapper: DB 쿼리를 관리하는 창고지기.
+
+//DTO: 각 계층을 오가는 데이터 상자.
+
+//XML: 실제 SQL 쿼리문이 적혀있는 주문서.

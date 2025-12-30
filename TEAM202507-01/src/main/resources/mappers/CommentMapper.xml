@@ -14,7 +14,7 @@
             C.CREATED_AT,
             C.PARENT_ID
         FROM COMMENTS C
-                 LEFT JOIN USERS U ON C.USER_ID = U.LOGIN_ID
+                 LEFT JOIN USERS U ON C.USER_ID = U.ID
         WHERE C.POST_ID = #{postId}
         ORDER BY C.CREATED_AT ASC, C.ID ASC
     </select>

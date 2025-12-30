@@ -7,6 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class JobUserPost {
+    // 위와 동일하게 DB 테이블 구조를 그대로 옮겨놓은 클래스임.
+    // 날짜 관련 필드는 DB와의 호환성을 위해 String이나 LocalDateTime을 상황에 맞춰 사용함.
     private Long id;
     private String category;
     private String userId;

@@ -10,7 +10,7 @@ public interface TourSearchRepository extends ElasticsearchRepository<TourDocume
     @Query("{" +
             "\"multi_match\": {" +
             "   \"query\": \"?0\", " +
-            "   \"fields\": [\"name^2\", \"address\", \"strAddress\", \"description\", \"guide\", \"parking\"], " +
+            "   \"fields\": [\"name^2\", \"address\", \"description\"], " +
             "   \"type\": \"cross_fields\", " +
             "   \"operator\": \"and\"" +
             "}" +

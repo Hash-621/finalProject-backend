@@ -35,14 +35,14 @@ public class SearchServiceImpl implements SearchService {
 
     private final RestaurantMapper restaurantMapper;
     private final TourMapper tourMapper;
-    private final NewsMapper newsMapper;
+//    private final NewsMapper newsMapper;
     private final JobMapper jobMapper;
     private final HospitalMapper hospitalMapper;
     private final CommunityMapper  communityMapper;
     private final RestaurantSearchRepository restaurantRepository;
     private final TourSearchRepository tourRepository;
     private final TourPostSearchRepository tourPostRepository;
-    private final NewsSearchRepository newsRepository;
+//    private final NewsSearchRepository newsRepository;
     private final JobSearchRepository jobRepository;
     private final JobUserPostSearchRepository jobUserPostRepository;
     private final HospitalSearchRepository hospitalRepository;
@@ -60,7 +60,7 @@ public class SearchServiceImpl implements SearchService {
                     .restaurants(List.of())
                     .tours(List.of())
                     .tourPosts(List.of())
-                    .news(List.of())
+//                    .news(List.of())
                     .jobs(List.of())
                     .jobPosts(List.of())
                     .hospitals(List.of())
@@ -78,7 +78,7 @@ public class SearchServiceImpl implements SearchService {
         List<TourPostDocument> tourPosts = tourPostRepository.searchByKeyword(keyword);
 
         // 4. 뉴스 검색
-        List<NewsDocument> news = newsRepository.searchByKeyword(keyword);
+//        List<NewsDocument> news = newsRepository.searchByKeyword(keyword);
 
         // 5. 구인구직(채용) 검색
         List<JobDocument> jobs = jobRepository.searchByKeyword(keyword);
@@ -97,7 +97,7 @@ public class SearchServiceImpl implements SearchService {
                 .restaurants(restaurants)
                 .tours(tours)
                 .tourPosts(tourPosts)
-                .news(news)
+//               .news(news)
                 .jobs(jobs)
                 .jobPosts(jobPosts)
                 .hospitals(hospitals)
@@ -114,7 +114,7 @@ public class SearchServiceImpl implements SearchService {
         result.append(restaurantDtoToEs()).append("\n");
         result.append(tourDtoToEs()).append("\n");
         result.append(tourPostDtoToEs()).append("\n");
-        result.append(newsDtoToEs()).append("\n");
+//        result.append(newsDtoToEs()).append("\n");
         result.append(jobDtoToEs()).append("\n");
         result.append(jobUserPostDtoToEs()).append("\n");
         result.append(hospitalDtoToEs()).append("\n");
@@ -166,14 +166,9 @@ public class SearchServiceImpl implements SearchService {
                         .id(dto.getId())
                         .name(dto.getName())
                         .address(dto.getAddress())
-                        .strAddress(dto.getStrAddress())
                         .description(dto.getDescription())
-                        .guide(dto.getGuide())
-                        .parking(dto.getParking())
                         .phone(dto.getPhone())
-                        .openTime(dto.getOpenTime())
-                        .price(dto.getPrice())
-                        .url(dto.getUrl())
+                        .image(dto.getImage())
                         .build())
                 .collect(Collectors.toList());
 
@@ -208,25 +203,23 @@ public class SearchServiceImpl implements SearchService {
     // =========================================================
     // 4. 뉴스 (News)
     // =========================================================
-    public String newsDtoToEs() {
-        List<NewsDto> dbList = newsMapper.findAll();
-        if (dbList.isEmpty()) return "뉴스: 데이터 없음";
-
-        List<NewsDocument> docList = dbList.stream()
-                .map(dto -> NewsDocument.builder()
-                        .id(dto.getId())
-                        .title(dto.getTitle())
-                        .content(dto.getContent())
-                        .source(dto.getSource())
-                        .author(dto.getAuthor())
-                        .imageUrl(dto.getImageUrl())
-                        .publishedAt(dto.getPublishedAt())
-                        .build())
-                .collect(Collectors.toList());
-
-        newsRepository.saveAll(docList);
-        return "뉴스: " + docList.size() + "건 완료";
-    }
+//    public String newsDtoToEs() {
+//        List<NewsDto> dbList = newsMapper.findAll();
+//        if (dbList.isEmpty()) return "뉴스: 데이터 없음";
+//
+//        List<NewsDocument> docList = dbList.stream()
+//                .map(dto -> NewsDocument.builder()
+//                        .title(dto.getTitle())
+//                        .content(dto.getContent())
+//                        .source(dto.getSource())
+//                        .author(dto.getAuthor())
+//                        .imageUrl(dto.getImageUrl())
+//                        .publishedAt(dto.getPublishedAt())
+//                        .build())
+//                .collect(Collectors.toList());
+//        newsRepository.saveAll(docList);
+//        return "뉴스: " + docList.size() + "건 완료";
+//    }
 
     // =========================================================
     // 5. 채용공고 (Job)

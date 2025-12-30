@@ -9,8 +9,8 @@
         <result property="name" column="tour_name" />
         <result property="address" column="tour_address" />
         <result property="phone" column="tour_phone" />
-        <result property="description" column="tourspotSumm" /> <result property="price" column="tour_price" />
-        <result property="openTime" column="tour_open_time" />
+        <result property="description" column="tour_summary" />
+        <result property="image" column="tour_image" />
     </resultMap>
 
     <select id="findAll" resultMap="TourMap">
@@ -20,7 +20,7 @@
         ORDER BY tour_id DESC
     </select>
 
-    <select id="findById" parameterType="Long" resultMap="TourMap">
+    <select id="findById" resultMap="TourMap">
         SELECT * FROM tourism
         WHERE tour_id = #{id}
     </select>
@@ -60,7 +60,7 @@
 <!--        WHERE tour_id = #{id}-->
 <!--    </update>-->
 
-    <delete id="delete" parameterType="Long">
+    <delete id="delete">
         DELETE FROM tourism
         WHERE tour_id = #{id}
     </delete>

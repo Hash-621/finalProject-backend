@@ -16,9 +16,15 @@ services:
         hard: -1
     volumes:
       - es_data:/usr/share/elasticsearch/data
-    # 👇 [추가] 컨테이너 시작 시 nori 플러그인 설치 명령 실행
+    # Nori 플러그인 설치 명령
     command: >
       /bin/sh -c "./bin/elasticsearch-plugin list | grep -q analysis-nori || ./bin/elasticsearch-plugin install analysis-nori; /usr/local/bin/docker-entrypoint.sh elasticsearch"
+
+  redis:
+    image: redis:alpine       # 수정됨 (images -> image)
+    container_name: myredis 
+    ports:
+      - "6379:6379"           # 수정됨 (하이픈 뒤에 띄어쓰기 추가)
 
 volumes:
   es_data:

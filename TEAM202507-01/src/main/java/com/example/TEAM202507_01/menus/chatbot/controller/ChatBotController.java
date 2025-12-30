@@ -15,8 +15,15 @@ public class ChatBotController {
 
     @PostMapping("/chat")
     public ResponseEntity<?> chat(@RequestBody Map<String, String> request) {
+        // 1. 사용자 질문 추출
         String userMessage = request.get("message");
-        String aiResponse = geminiService.getChatResponse(userMessage);
+
+        // 2. 서비스 호출 (★ 여기를 수정했습니다!)
+        // getChatResponse -> getContents
+        // (GeminiService에 정의된 메서드 이름과 똑같아야 합니다.)
+        String aiResponse = geminiService.getContents(userMessage);
+
+        // 3. 결과 반환
         return ResponseEntity.ok(Map.of("response", aiResponse));
     }
 }

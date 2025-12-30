@@ -6,12 +6,12 @@ import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
 import java.util.List;
 
 public interface HospitalService {
-    // [중요] 구현체와 똑같이 반환 타입을 HospitalDto로 맞춰줍니다.
+
+    // 구현체(ServiceImpl)가 반드시 만들어야 할 메서드 목록임.
     List<HospitalDto> findAll();
 
     List<HospitalMapDto> findInfo();
 
-    // [중요] 여기도 HospitalDto로 맞춰줍니다.
     HospitalDto findById(Long id);
 
     HospitalDto save(HospitalDto hospital);
