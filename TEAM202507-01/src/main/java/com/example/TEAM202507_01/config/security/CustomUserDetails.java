@@ -1,5 +1,6 @@
 package com.example.TEAM202507_01.config.security;
 
+
 import com.example.TEAM202507_01.user.dto.UserDto;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,17 +13,21 @@ import java.util.Collection;
 @Getter // 이걸 써야 나중에 controller에서 user.getId() 가능
 public class CustomUserDetails implements UserDetails {
 
-    private final UserDto userDto; // 우리의 진짜 유저 정보
+    private final UserDto userDto;// 우리의 진짜 유저 정보
+
 
     // 생성자
     public CustomUserDetails(UserDto userDto) {
         this.userDto = userDto;
     }
-
     // 🔥 [핵심] 우리가 필요한 ID를 꺼내는 메서드 (Controller에서 씀)
     public String getId() {
         return userDto.getId();
     }
+    public String getLoginId() {
+        return userDto.getLoginId();
+    }
+
 
     // --- 아래는 스프링 시큐리티 필수 오버라이드 메서드들 ---
 
@@ -53,4 +58,6 @@ public class CustomUserDetails implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
     @Override
     public boolean isEnabled() { return true; }
+
+
 }

@@ -154,11 +154,14 @@
         WHERE EMAIL = #{email}
     </update>
 
-    <select id="countByLoginId" resultType="int">
-        SELECT COUNT(*) FROM USERS WHERE LOGIN_ID = #{loginId}
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) FROM USERS WHERE LOWER(TRIM(EMAIL)) = LOWER(TRIM(#{email}))
     </select>
 
-    <select id="countByEmail" resultType="int">
-        SELECT COUNT(*) FROM USERS WHERE EMAIL = #{email}
+    <select id="findUserAuthByLoginId" resultType="com.example.TEAM202507_01.user.dto.UserAuthDto">
+        SELECT LOGIN_ID, AUTHORITY AS ROLE
+        FROM USER_AUTH
+        WHERE LOGIN_ID = #{loginId}
     </select>
+
 </mapper>

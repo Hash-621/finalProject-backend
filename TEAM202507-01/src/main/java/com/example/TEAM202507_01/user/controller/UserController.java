@@ -2,15 +2,19 @@ package com.example.TEAM202507_01.user.controller;
 
 import com.example.TEAM202507_01.config.helper.CookieHelper;
 import com.example.TEAM202507_01.config.jwt.TokenDto;
+import com.example.TEAM202507_01.config.security.CustomUserDetails;
 import com.example.TEAM202507_01.menus.mailgun.dto.mailDto;
 import com.example.TEAM202507_01.user.dto.*;
+import com.example.TEAM202507_01.user.repository.UserMapper;
 import com.example.TEAM202507_01.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -28,6 +32,7 @@ public class UserController {
 
     private final UserService userService;
     private final CookieHelper cookieHelper;
+    private final UserMapper userMapper;
 
     // 1. 전체 회원 조회 (관리자용)
     @GetMapping
@@ -151,24 +156,21 @@ public class UserController {
     }
 
     @GetMapping("/auth")
-    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
-        // 1. JwtFilter를 통과하지 못해 비로그인 상태라면 null
-        if (userDetails == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+    public ResponseEntity<UserAuthDto> checkAuth(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        // 1. 토큰 검증 실패 또는 만료 시 null (SecurityFilter에서 걸러지지만 안전장치)
+        if (customUserDetails == null) {
+            return ResponseEntity.status(401).build();
         }
 
-        // 2. 권한 꺼내기 (ROLE_ADMIN 등)
-        String role = userDetails.getAuthorities().stream()
-                .findFirst() // 권한이 여러 개라면 로직 수정 필요
-                .map(GrantedAuthority::getAuthority)
-                .orElse("ROLE_USER");
+        // 2. 토큰에서 User ID(PK) 추출
+        String userId = customUserDetails.getLoginId();
 
-        // 3. JSON으로 리턴
-        Map<String, String> response = new HashMap<>();
-        response.put("userId", userDetails.getUsername());
-        response.put("role", role);
+        // 3. DB에서 최신 유저 정보(권한 포함) 조회
+        UserAuthDto userAuthInfo = userService.findUserAuthInfo(userId);
 
-        return ResponseEntity.ok(response);
+        // 4. 프론트엔드로 반환
+        return ResponseEntity.ok(userAuthInfo);
     }
 
     @GetMapping("/check-id")
@@ -177,4 +179,36 @@ public class UserController {
         return ResponseEntity.ok(isAvailable);
     }
 
+    // 11. 이메일 인증 번호 발송 (POST /api/v1/user/checkemail/get-token)
+    @PostMapping("/checkemail/get-token")
+    public ResponseEntity<String> emailGetToken(@RequestBody CheckEmailDto checkEmailDto) {
+        // 6자리 랜덤 숫자 생성 (String.format 사용으로 코드 간소화)
+        // 0~999999 사이의 숫자를 뽑고, 빈 자리는 0으로 채움 (예: 5 -> "000005")
+        String email = checkEmailDto.getEmail();
+        String token = String.format("%06d", (int)(Math.random() * 1000000));
+
+        try {
+            userService.getTokenForCheckEmail(email, token);
+            return ResponseEntity.ok("인증 번호가 발송되었습니다.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage()); // 중복 이메일 등 에러 처리
+        }
+    }
+
+    // 12. 이메일 인증 번호 확인 (POST /api/v1/user/checkemail)
+    @PostMapping("/checkemail")
+    public ResponseEntity<String> verifyEmail(@RequestBody CheckEmailDto checkEmailDto) {
+        try {
+            boolean isVerified = userService.verifyEmailToken(checkEmailDto);
+
+            if (isVerified) {
+                return ResponseEntity.ok("인증에 성공했습니다.");
+            } else {
+                return ResponseEntity.status(400).body("인증 번호가 일치하지 않습니다.");
+            }
+        } catch (RuntimeException e) {
+            // "인증 시간이 만료되었습니다" 등의 메시지 반환
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }

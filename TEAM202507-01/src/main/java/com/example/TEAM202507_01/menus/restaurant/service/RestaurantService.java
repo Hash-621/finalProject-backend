@@ -1,5 +1,6 @@
 package com.example.TEAM202507_01.menus.restaurant.service;
 
+import com.example.TEAM202507_01.menus.restaurant.dto.RestaurantBlogDto;
 import com.example.TEAM202507_01.menus.restaurant.dto.RestaurantDto;
 import java.util.List;
 

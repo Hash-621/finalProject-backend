@@ -16,6 +16,8 @@ public interface mailService {
     void sendFindIdMail(String addr,String token);
 
     void sendResetPwMail(String addr,String token);
+
+    void sendCheckEmail(String email, String token);
 }
 
 

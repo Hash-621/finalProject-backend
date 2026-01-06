@@ -21,10 +21,10 @@ public class RestaurantBlogDto {
     @JsonPropertyOrder({ "title", "bloggername", "description", "postdate", "link", "thumbnail"})
     public static class BlogItem {
         private String title;       // 글 제목
-        private String link;        // 글 링크
-        private String description; // 글 요약
         private String bloggername; // 블로거 이름
+        private String description; // 글 요약
         private String postdate;    // 작성일
+        private String link;        // 글 링크
 
         // 이 필드는 네이버 API가 주는 게 아니라, 우리가 크롤링해서 추가로 채워 넣을 썸네일 주소임.
         private String thumbnail;

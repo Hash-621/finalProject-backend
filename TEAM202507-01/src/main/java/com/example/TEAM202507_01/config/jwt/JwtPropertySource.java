@@ -22,7 +22,7 @@ public class JwtPropertySource {
     private String cookieName;
 
     @Value("${cookie.jwt.http-only}")
-    private boolean isEnabledHttpOnly;
+    private boolean     isEnabledHttpOnly;
 
     @Value("${cookie.jwt.secure}")
     private boolean isEnabledSecure;

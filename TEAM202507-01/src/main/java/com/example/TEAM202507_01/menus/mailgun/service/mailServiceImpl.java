@@ -110,4 +110,32 @@ public class mailServiceImpl implements mailService {
         }
     }
 
+    @Override
+    public void sendCheckEmail(String email, String token) {
+        // 보낼 내용을 HTML 형식의 문자열로 미리 만든다.
+        // token 변수가 문자열 중간에 삽입된다.
+
+        String text = mailForm.codeSend(token);
+        try {
+            // 위와 동일하게 메일 객체 생성
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            //수신자 설정 (매개변수로 받은 addr)
+            helper.setTo(email);
+
+            //제목은 고정된 값 사용
+            helper.setSubject("[다잇슈 대전]이메일 인증");
+
+            // 만들어둔 HTML 내용(text)을 본문에 넣는다. HTML 모드 true.
+            helper.setText(text, true); // true는 HTML 형식임을 의미
+
+            //전송
+            mailSender.send(message);
+            System.out.println("메일 전송완료!");
+        } catch (MessagingException e) {
+            System.err.println("메일 전송 실패 : " + e.getMessage());
+            throw new RuntimeException("메일 발송에 실패했습니다. 원인: " + e.getMessage());
+        }
+    }
 }

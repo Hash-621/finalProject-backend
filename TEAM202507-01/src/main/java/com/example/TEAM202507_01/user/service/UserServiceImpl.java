@@ -22,12 +22,13 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService  {
     @Value("${jwt.secret}")
     private String jwtSecret;
     private SecretKey secretKey;
@@ -198,11 +199,73 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String checkEmail(String email) {
-        int count = userMapper.countByEmail(checkEmailDto.getEmail());
+    public boolean checkEmail(String email) {
+        int count = userMapper.countByEmail(email);
         if(count > 0) {
+            throw new RuntimeException("이미 가입된 이메일입니다.");
+        }
+        return true; // 중복 아님 (사용 가능)
+    }
 
+    // [기존] 인증번호 발송 및 Redis 저장
+    @Override
+    public void getTokenForCheckEmail(String email, String value) {
+        // 1. 이메일 중복 검사를 먼저 수행하는 것이 안전합니다.
+        checkEmail(email);
+
+        // 2. 메일 발송
+        mailService.sendCheckEmail(email, value);
+
+        // 3. 기존 키 삭제 후 Redis 저장 (3분 유효)
+        if (redisTemplate.opsForValue().get(email) != null) {
+            redisTemplate.delete(email);
+        }
+        redisTemplate.opsForValue().set(email, value, Duration.ofMinutes(3));
+    }
+
+    // 🔥 [추가] 인증번호 검증 메서드
+    public boolean verifyEmailToken(CheckEmailDto checkEmailDto) {
+        String email = checkEmailDto.getEmail();
+        String inputToken = checkEmailDto.getToken();
+
+        // Redis에서 해당 이메일의 토큰 가져오기
+        String storedToken = redisTemplate.opsForValue().get(email);
+
+        // 1. 토큰이 만료되었거나 없을 경우
+        if (storedToken == null) {
+            throw new RuntimeException("인증 시간이 만료되었거나 인증 번호를 요청하지 않았습니다.");
         }
 
+        // 2. 토큰 일치 여부 확인
+        if (storedToken.equals(inputToken)) {
+            // 인증 성공 시 Redis에서 삭제 (재사용 방지)
+            redisTemplate.delete(email);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public UserAuthDto findUserAuthInfo(String loginId) {
+        // 1. 해당 아이디의 모든 권한 조회 (List)
+        System.out.println(">>> [DB조회 시도] 검색할 아이디: [" + loginId + "]");
+        List<UserAuthDto> authList = userMapper.findUserAuthByLoginId(loginId);
+
+
+        // 데이터가 없으면 예외 처리
+        if (authList == null || authList.isEmpty()) {
+            throw new IllegalArgumentException("권한 정보가 없는 사용자입니다.");
+        }
+
+        // 2. 권한 목록 중 'ROLE_ADMIN'이 포함되어 있는지 검사
+        boolean isAdmin = authList.stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getRole()));
+
+        // 3. 응답용 객체 생성
+        // (userId는 DB에 없으므로 null로 둡니다. 프론트 인증 체크에는 영향 없습니다.)
+        UserAuthDto responseDto = new UserAuthDto();
+        responseDto.setId(loginId);
+        responseDto.setRole(isAdmin ? "ROLE_ADMIN" : "ROLE_USER");
+
+        return responseDto;
     }
 }

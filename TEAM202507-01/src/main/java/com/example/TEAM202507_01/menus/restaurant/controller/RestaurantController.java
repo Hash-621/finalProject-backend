@@ -55,10 +55,10 @@ public class RestaurantController {
 
     // 5. 블로그 검색 (GET /api/v1/restaurant/{id}/blogs)
     @GetMapping("/{id}/blogs")
-    public ResponseEntity<List<RestaurantBlogDto.BlogItem>> getRestaurantBlogs(@PathVariable Long id) {
-        // 해당 식당 ID로 블로그 검색 결과를 가져옴.
-        List<RestaurantBlogDto.BlogItem> blogList = blogService.searchBlogList(id);
-        return ResponseEntity.ok(blogList);
+    public ResponseEntity<RestaurantBlogDto> getRestaurantBlogs(@PathVariable Long id) {
+        // Service가 DTO를 반환하므로 그대로 리턴
+        RestaurantBlogDto result = blogService.searchBlogList(id);
+        return ResponseEntity.ok(result);
     }
 
     // 6. 즐겨찾기 토글 (POST /api/v1/restaurant/{id}/favorite)

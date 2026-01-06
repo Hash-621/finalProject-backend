@@ -55,7 +55,6 @@ public class SecurityConfig {
                         // 커뮤니티, 채용정보 등 API 허용
                         .requestMatchers("/api/v1/community/**", "/api/v1/job/**").permitAll()
                         .requestMatchers("/api/v1/admin/visit").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         // 나머지 요청 허용
                         .anyRequest().permitAll()
                 )

@@ -3,6 +3,7 @@ package com.example.TEAM202507_01.user.repository;
 import com.example.TEAM202507_01.user.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,5 +42,7 @@ public interface UserMapper {
     void updatePw(UpdatePwDto updatePwDto);
 
     int countByEmail(String email);
+
+    List<UserAuthDto> findUserAuthByLoginId(String loginId);
 
 }
