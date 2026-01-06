@@ -1,10 +1,13 @@
 package com.example.TEAM202507_01.menus.hospital.controller;
 
+import com.example.TEAM202507_01.config.security.CustomUserDetails;
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalDto;
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
 import com.example.TEAM202507_01.menus.hospital.service.HospitalService;
+import com.example.TEAM202507_01.user.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.List;
 public class HospitalController {
 
     private final HospitalService hospitalService;
+    private final FavoriteService favoriteService;
 
     // 1. 목록 조회 (GET)
     // [수정]: 반환 타입을 List<Hospital> -> List<HospitalDto>로 변경
@@ -61,6 +65,26 @@ public class HospitalController {
         hospitalService.delete(id);
         return ResponseEntity.ok("병원 삭제 성공");
     }
+    // 5. 즐겨찾기 토글
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<String> hospitalFavorite(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails // 🔥 현재 로그인한 사용자 정보
+    ) {
+        // 로그인 안 했으면 401 에러 반환
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        String userId = userDetails.getId();
+        // 즐겨찾기 서비스 호출 (카테고리, 유저ID, 식당ID)
+        favoriteService.toggleFavorite("HOSPITALS", userId, id);
+
+        return ResponseEntity.ok("즐겨찾기 처리가 완료되었습니다.");
+    }
+
+
+
 }
 
 ///전체구조 및 연결 흐름 ///

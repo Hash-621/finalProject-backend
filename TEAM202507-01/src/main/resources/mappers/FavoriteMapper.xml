@@ -16,7 +16,7 @@
 
     <delete id="delete">
         DELETE FROM FOV_LIST
-        WHERE CATEGORY = #{category} AND USER_ID = #{userId} AND REST_ID = #{restId}
+        WHERE CATEGORY = #{category} AND USER_ID = #{userId} AND FOV_ID = #{fovId}
     </delete>
 
 </mapper>

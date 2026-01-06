@@ -74,7 +74,7 @@ public class RestaurantController {
 
         String userId = userDetails.getId();
         // 즐겨찾기 서비스 호출 (식당 타입, 유저ID, 식당ID)
-        favoriteService.toggleFavorite("RESTOURANT", userId, id);
+        favoriteService.toggleFavorite("RESTOURANTS", userId, id);
 
         return ResponseEntity.ok("즐겨찾기 처리가 완료되었습니다.");
     }

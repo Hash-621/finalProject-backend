@@ -107,6 +107,7 @@ public class NaverService {
             newUser.setNickname(naverUser.getNickname() != null ? naverUser.getNickname() : naverUser.getName());
 
             userMapper.insertUser(newUser);
+            userMapper.saveAuthority(newUser.getLoginId(), "ROLE_USER");
         }
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(

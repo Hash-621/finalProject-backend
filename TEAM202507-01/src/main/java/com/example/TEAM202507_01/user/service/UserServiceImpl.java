@@ -170,7 +170,6 @@ public class UserServiceImpl implements UserService {
     public boolean resetPw(String token, String email) {
         String inner = redisTemplate.opsForValue().get(email);
         if (token.equals(inner)) {
-            redisTemplate.delete(email);
             return true;
         } else {
             return false;
@@ -178,8 +177,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePw(UpdatePwDto updatePwDto) {
-        updatePwDto.setPassword(passwordEncoder.encode(updatePwDto.getPassword()));
-        userMapper.updatePw(updatePwDto);
+    public void updatePw(UpdatePwDto updatePwDto) throws RuntimeException {
+
+        if (updatePwDto.getToken().equals(redisTemplate.opsForValue().get(updatePwDto.getEmail()))) {
+            redisTemplate.delete(updatePwDto.getEmail());
+            updatePwDto.setPassword(passwordEncoder.encode(updatePwDto.getPassword()));
+            userMapper.updatePw(updatePwDto);
+        } else {
+            throw new RuntimeException("토큰이 일치 하지 않습니다.");
+        }
+
+    }
+
+    @Override
+    public boolean checkIdAvailability(String loginId) {
+        // 아이디로 조회된 개수 가져오기
+        int count = userMapper.countByLoginId(loginId);
+        // 개수가 0이면 존재하지 않는 것이므로 true(사용 가능) 반환
+        return count == 0;
+    }
+
+    @Override
+    public String checkEmail(String email) {
+        int count = userMapper.countByEmail(checkEmailDto.getEmail());
+        if(count > 0) {
+
+        }
+
     }
 }

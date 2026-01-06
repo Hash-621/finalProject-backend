@@ -20,7 +20,7 @@ public class SearchController {
 
     // [구조 분석]
     // 컨트롤러는 직접 로직을 짜지 않고 서비스에게 일을 시킴.
-    // final 키워드를 써서 서비스 객체가 한 번 주입되면 바뀌지 않도록 함.
+    // final 키워드를 써서 서비스 객체가 한 번 주입되면 바뀌지 않도록 함.    
     private final SearchService searchService;
 
     // 1. 통합 검색 기능

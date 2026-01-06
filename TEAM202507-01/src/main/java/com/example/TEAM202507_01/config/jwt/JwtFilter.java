@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -81,4 +83,28 @@ public class JwtFilter extends GenericFilterBean {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         return StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ") ? bearerToken.substring(7) : null;
     }
+
+    private String resolveToken(HttpServletRequest request) {
+        String token = null;
+
+        // 1. 쿠키에서 먼저 찾기 (우선순위)
+        if (request.getCookies() != null) {
+            token = Arrays.stream(request.getCookies())
+                    .filter(c -> "jwt_cookie".equals(c.getName())) // ★ 쿠키 이름 확인! (로그인 때 저장한 이름)
+                    .findFirst()
+                    .map(Cookie::getValue)
+                    .orElse(null);
+        }
+
+        // 2. 쿠키에 없으면 헤더에서 찾기 (기존 방식 Fallback)
+        if (!StringUtils.hasText(token)) {
+            String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+            if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+                token = bearerToken.substring(7);
+            }
+        }
+
+        return token;
+    }
+
 }

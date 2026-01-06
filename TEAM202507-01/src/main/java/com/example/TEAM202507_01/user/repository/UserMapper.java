@@ -39,4 +39,7 @@ public interface UserMapper {
     int resetPw(ResetPasswordDto resetPasswordDto);
 
     void updatePw(UpdatePwDto updatePwDto);
+
+    int countByEmail(String email);
+
 }

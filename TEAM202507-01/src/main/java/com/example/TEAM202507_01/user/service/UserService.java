@@ -16,5 +16,7 @@ public interface UserService {
     String findUserId(FindUserIdDto findUserIdDto);
     void getResetPw(ResetPasswordDto resetPasswordDto);
     boolean resetPw(String token , String email);
-    void updatePw(UpdatePwDto updatePwDto);
+    void updatePw(UpdatePwDto updatePwDto) throws RuntimeException;
+    boolean checkIdAvailability(String loginId);
+    String checkEmail(String email);
 }

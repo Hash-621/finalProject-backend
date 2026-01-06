@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     // 6. DevTools (서버 재시작 없이 반영) - ★추가됨
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    //developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     // 7. 오라클 드라이버 (작성하신 것)
     implementation 'com.oracle.database.jdbc:ojdbc11'

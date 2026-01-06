@@ -9,11 +9,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -136,9 +140,41 @@ public class UserController {
     }
     @PostMapping("/resetPw")
     public ResponseEntity<Void> resetPw(@RequestBody UpdatePwDto updatePwDto) {
-        userService.updatePw(updatePwDto);
-        return ResponseEntity.ok().build();
+        try {
+            userService.updatePw(updatePwDto);
+            return ResponseEntity.ok().build();
+
+        }catch (RuntimeException e){
+            System.err.println(e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
+    @GetMapping("/auth")
+    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
+        // 1. JwtFilter를 통과하지 못해 비로그인 상태라면 null
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        // 2. 권한 꺼내기 (ROLE_ADMIN 등)
+        String role = userDetails.getAuthorities().stream()
+                .findFirst() // 권한이 여러 개라면 로직 수정 필요
+                .map(GrantedAuthority::getAuthority)
+                .orElse("ROLE_USER");
+
+        // 3. JSON으로 리턴
+        Map<String, String> response = new HashMap<>();
+        response.put("userId", userDetails.getUsername());
+        response.put("role", role);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<Boolean> checkIdDuplicate(@RequestParam String loginId) {
+        boolean isAvailable = userService.checkIdAvailability(loginId);
+        return ResponseEntity.ok(isAvailable);
+    }
 
 }

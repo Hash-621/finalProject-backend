@@ -162,6 +162,7 @@ public class KakaoService {
 
         // 3. DB 저장 (Mapper가 CreateUserDTO를 받도록 수정 필요)
         userMapper.save(newUser);
+        userMapper.saveAuthority(newUser.getLoginId(), "ROLE_USER");
 
         // 4. 🔥 [중요] forceLogin 메서드를 위해 UserDto로 변환해서 리턴
         // (CreateUserDTO에는 없는 필드(createdAt 등)가 있을 수 있으므로 변환 과정 필요)

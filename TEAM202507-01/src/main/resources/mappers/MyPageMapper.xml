@@ -53,19 +53,17 @@
     <select id="selectMyFavorites" parameterType="map" resultType="map">
         SELECT * FROM (
                           SELECT ROW_NUMBER() OVER (ORDER BY f.FOV_ID DESC) AS RN,
-                              f.FOV_ID AS "id",
-                                 f.FOV_ID AS "targetId",
+                                 f.FOV_ID AS "id",
                                  f.CATEGORY AS "category",
                                  CASE
                                      WHEN f.CATEGORY = 'NEWS'        THEN (SELECT title FROM news WHERE TO_CHAR(id) = f.FOV_ID)
                                      WHEN f.CATEGORY = 'JOBS'        THEN (SELECT title FROM job_post WHERE TO_CHAR(id) = f.FOV_ID)
                                      WHEN f.CATEGORY = 'HOSPITALS'   THEN (SELECT NAME FROM HOSPITALS WHERE TO_CHAR(ID) = f.FOV_ID)
                                      -- ▼ 아래 줄이 수정되었습니다 (S 제거) ▼
-                                     WHEN f.CATEGORY = 'RESTOURANT'  THEN (SELECT rest_NAME FROM restaurant WHERE TO_CHAR(rest_id) = f.FOV_ID)
+                                     WHEN f.CATEGORY = 'RESTOURANTS'  THEN (SELECT rest_NAME FROM restaurant WHERE TO_CHAR(rest_id) = f.FOV_ID)
                                      WHEN f.CATEGORY = 'TOURS'       THEN (SELECT tour_name FROM tourism WHERE TO_CHAR(tour_id) = f.FOV_ID)
-                                     ELSE 'Unknown'
-                                     END AS "title",
-                                 TO_CHAR(SYSDATE, 'YYYY-MM-DD') AS "createdAt"
+                                     ELSE 'unknown'
+                                     END AS "title"
                           FROM fov_list f
                           WHERE f.USER_ID = #{userId}
                       )

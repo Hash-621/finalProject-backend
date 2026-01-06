@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class UpdatePwDto {
     private String email;
+    private String token;
     private String password;
 }

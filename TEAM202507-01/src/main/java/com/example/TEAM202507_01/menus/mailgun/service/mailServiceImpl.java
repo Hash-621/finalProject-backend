@@ -1,5 +1,6 @@
 package com.example.TEAM202507_01.menus.mailgun.service;
 
+import com.example.TEAM202507_01.menus.mailgun.Form.mailForm;
 import com.example.TEAM202507_01.menus.mailgun.dto.mailDto;
 import io.jsonwebtoken.Jwts;
 import jakarta.mail.MessagingException;
@@ -63,7 +64,8 @@ public class mailServiceImpl implements mailService {
     public void sendFindIdMail(String addr, String token) {
         // 보낼 내용을 HTML 형식의 문자열로 미리 만든다.
         // token 변수가 문자열 중간에 삽입된다.
-        String text = "<h1>안녕하세요<h1><br><h3>아래의 인증 번호를 입력해주세요<h3><br><h1>" + token + "<h1><br>";
+
+        String text = mailForm.codeSend(token);
         try {
             // 위와 동일하게 메일 객체 생성
             MimeMessage message = mailSender.createMimeMessage();
@@ -85,14 +87,16 @@ public class mailServiceImpl implements mailService {
             System.err.println("메일 전송 실패 : " + e.getMessage());
         }
     }
+
     @Value("${server.address}")
     String domain;
-    @Value("${server.port}")
-    String port;
+//    @Value("${server.port}")
+    String port = "3000";
+
     public void sendResetPwMail(String addr, String token) {
 
-        String text = "<h1>안녕하세요<h1><br><h3>비밀 번호 변경 요청이 생성 되었습니다. 아래의 주소로 접속해주세요.<h3><br>"+
-        domain + ":" + port + "/api/v1/user/resetPw?token=" + token +"&email="+addr+"<br>본인이 요청이 아닌경우 무시해주세요.3분간 유효합니다.";
+        String link ="http://"+ domain + ":" + port + "/resetPw?token=" + token + "&email=" + addr;
+        String text = mailForm.passwordSend(link);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

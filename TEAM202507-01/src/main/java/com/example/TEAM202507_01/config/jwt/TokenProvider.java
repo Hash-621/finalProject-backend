@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class TokenProvider implements InitializingBean {
+public class    TokenProvider implements InitializingBean {
 
     private final JwtPropertySource jwtPropertySource;
     private static final String AUTH_CLAIM_KEY = "authorities";

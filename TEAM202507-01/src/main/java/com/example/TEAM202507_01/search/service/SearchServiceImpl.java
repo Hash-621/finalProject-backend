@@ -35,14 +35,14 @@ public class SearchServiceImpl implements SearchService {
 
     private final RestaurantMapper restaurantMapper;
     private final TourMapper tourMapper;
-//    private final NewsMapper newsMapper;
+    //    private final NewsMapper newsMapper;
     private final JobMapper jobMapper;
     private final HospitalMapper hospitalMapper;
     private final CommunityMapper  communityMapper;
     private final RestaurantSearchRepository restaurantRepository;
     private final TourSearchRepository tourRepository;
     private final TourPostSearchRepository tourPostRepository;
-//    private final NewsSearchRepository newsRepository;
+    //    private final NewsSearchRepository newsRepository;
     private final JobSearchRepository jobRepository;
     private final JobUserPostSearchRepository jobUserPostRepository;
     private final HospitalSearchRepository hospitalRepository;

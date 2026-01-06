@@ -1,8 +1,11 @@
 package com.example.TEAM202507_01.menus.tour.controller;
 
+import com.example.TEAM202507_01.config.security.CustomUserDetails;
 import com.example.TEAM202507_01.menus.tour.dto.TourDto;
 import com.example.TEAM202507_01.menus.tour.service.TourService;
+import com.example.TEAM202507_01.user.service.FavoriteService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import java.util.List;
 public class TourController {
 
     private final TourService tourService; // 서비스 연결
+    private final FavoriteService favoriteService;
 
     // 1. 목록 조회 (GET /api/v1/tour)
     @GetMapping
@@ -43,5 +47,23 @@ public class TourController {
     public ResponseEntity<String> deleteTour(@PathVariable Long id) {
         tourService.delete(id); // 삭제 시킴
         return ResponseEntity.ok("관광지 삭제 성공"); // 성공 메시지 반환
+    }
+
+    // 5. 즐겨찾기 토글
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<String> tourFavorite(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails // 🔥 현재 로그인한 사용자 정보
+    ) {
+        // 로그인 안 했으면 401 에러 반환
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        String userId = userDetails.getId();
+        // 즐겨찾기 서비스 호출 (카테고리, 유저ID, 식당ID)
+        favoriteService.toggleFavorite("TOURS", userId, id);
+
+        return ResponseEntity.ok("즐겨찾기 처리가 완료되었습니다.");
     }
 }
