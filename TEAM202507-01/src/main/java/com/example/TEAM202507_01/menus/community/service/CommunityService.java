@@ -2,6 +2,7 @@ package com.example.TEAM202507_01.menus.community.service;
 
 import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
@@ -21,4 +22,10 @@ public interface CommunityService {
     List<CommentDto> findCommentsByPostId(Long postId);
     void saveComment(CommentDto dto);
     void deleteComment(Long id);
+
+
+    void likeIncrease(Long id, String userId);
+    int likeCount(Long id);
+
+    boolean isUserLiked(Long id, String userId);
 }

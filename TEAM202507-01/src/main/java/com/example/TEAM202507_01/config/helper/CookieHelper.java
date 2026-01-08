@@ -18,6 +18,7 @@ public class CookieHelper {
                 .secure(jwtPropertySource.isEnabledSecure())
                 .path(jwtPropertySource.getPath())
                 .maxAge(jwtPropertySource.getMaxAge())
+                .domain(null)
                 .sameSite("Lax")
                 .build()
                 .toString();

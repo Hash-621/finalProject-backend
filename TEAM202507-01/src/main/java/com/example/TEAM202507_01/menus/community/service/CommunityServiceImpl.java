@@ -7,6 +7,7 @@ import com.example.TEAM202507_01.menus.community.repository.CommunityMapper;
 import com.example.TEAM202507_01.user.repository.MyPageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -106,6 +107,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     @Transactional(readOnly = true)
     public CommunityDto findPostById(Long id) {
+        communityMapper.viewCountIncrease(id);
         return communityMapper.selectPostById(id);
     }
 
@@ -135,8 +137,52 @@ public class CommunityServiceImpl implements CommunityService {
         }
     }
 
-    @Override @Transactional public void deletePost(Long id) { communityMapper.deletePost(id); }
-    @Override @Transactional(readOnly = true) public List<CommentDto> findCommentsByPostId(Long postId) { return communityMapper.selectCommentsByPostId(postId); }
-    @Override @Transactional public void deleteComment(Long id) { communityMapper.deleteComment(id); }
-    @Override @Transactional(readOnly = true) public List<CommunityDto> findPostsByCategory(String category) { return communityMapper.selectPostsByCategoryPaging(category, 0, 100); }
+    @Override
+    @Transactional
+    public void deletePost(Long id) {
+        communityMapper.deletePost(id);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentDto> findCommentsByPostId(Long postId) {
+        return communityMapper.selectCommentsByPostId(postId);
+    }
+    @Override
+    @Transactional
+    public void deleteComment(Long id) {
+        communityMapper.deleteComment(id);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommunityDto> findPostsByCategory(String category) {
+        return communityMapper.selectPostsByCategoryPaging(category, 0, 100);
+    }
+
+
+    @Override
+    public boolean isUserLiked(Long id, String userId){
+        int count = communityMapper.likeExists(id, userId);
+
+        if (count < 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void likeIncrease(Long id, String userId) {
+        int count = communityMapper.likeExists(id, userId);
+
+        if (count < 1) {
+            communityMapper.likeIncrease(id, userId);
+        } else {
+            communityMapper.likeDecrease(id, userId);
+        }
+    }
+
+    @Override
+    public int likeCount(Long id) {
+        return communityMapper.likeCount(id);
+    }
 }

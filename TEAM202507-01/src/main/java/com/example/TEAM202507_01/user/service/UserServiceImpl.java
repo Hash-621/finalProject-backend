@@ -247,7 +247,7 @@ public class UserServiceImpl implements UserService  {
     }
     public UserAuthDto findUserAuthInfo(String loginId) {
         // 1. 해당 아이디의 모든 권한 조회 (List)
-        System.out.println(">>> [DB조회 시도] 검색할 아이디: [" + loginId + "]");
+//        System.out.println(">>> [DB조회 시도] 검색할 아이디: [" + loginId + "]");
         List<UserAuthDto> authList = userMapper.findUserAuthByLoginId(loginId);
 
 

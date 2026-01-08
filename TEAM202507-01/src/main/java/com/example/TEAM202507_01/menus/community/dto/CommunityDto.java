@@ -22,7 +22,8 @@ public class CommunityDto {
     private String title;       // 글 제목.
     private String content;     // 글 내용.
     private LocalDateTime createdAt; // 작성일시.
-    private String userId;      // 작성자 아이디 (FK).
+    private String userId;// 작성자 아이디 (FK).
+    // [수정] RECOMMEND -> NOTICE로 변경 주석 반영
     private String category;    // 게시판 종류 (FREE: 자유, RECOMMEND: 추천).
     private LocalDateTime updatedAt; // 수정일시.
     private Long viewCount;     // 조회수.
@@ -30,4 +31,5 @@ public class CommunityDto {
     // [중요] DB 테이블(POSTS)에는 없지만, 화면에 보여주기 위해 JOIN해서 가져오는 값임.
     private String userNickname; // 작성자 닉네임.
     private int commentCount;
+    private int likeCount;
 }

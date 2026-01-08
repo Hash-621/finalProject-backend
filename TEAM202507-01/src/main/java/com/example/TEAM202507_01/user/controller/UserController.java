@@ -157,7 +157,6 @@ public class UserController {
 
     @GetMapping("/auth")
     public ResponseEntity<UserAuthDto> checkAuth(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
         // 1. 토큰 검증 실패 또는 만료 시 null (SecurityFilter에서 걸러지지만 안전장치)
         if (customUserDetails == null) {
             return ResponseEntity.status(401).build();

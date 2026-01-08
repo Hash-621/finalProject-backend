@@ -4,6 +4,8 @@ import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.List;
 
 @Mapper
@@ -38,6 +40,15 @@ public interface CommunityMapper {
             @Param("userId") String userId,
             @Param("currentPostId") Long currentPostId
     );
+
+    void viewCountIncrease (long id);
+
+    void likeIncrease(@Param("id") long id, @Param("userId") String userId);
+    void likeDecrease(@Param("id") long id, @Param("userId") String userId);
+
+    int likeExists(@Param("id") long id, @Param("userId") String userId);
+
+    int likeCount(@Param("id") long id);
 
     // ------------------- 게시글 관리 -------------------
     void insertPost(CommunityDto dto);

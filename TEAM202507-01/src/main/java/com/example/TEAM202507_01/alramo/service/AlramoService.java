@@ -22,7 +22,7 @@ public class AlramoService {
         //.setEncrypted(true): 통신 내용을 암호화(보안 처리)해서 보내겠다는 설정
     }
 
-    public void sendNewPostNotification(String title) {
+    public void sendNewPostNotification(String title, String url) {
 
         JsonObject jsonObject = new JsonObject();
         // 'my-channel' 채널의 'new-post' 이벤트를 발생시킴
@@ -30,7 +30,7 @@ public class AlramoService {
         //해석: JsonObject라는 빈 상자를 하나 만듭니다. 여기에 알림 내용을 담음
 
         jsonObject.addProperty("title", title);
-        jsonObject.addProperty("url", "");
+        jsonObject.addProperty("url", url);
         //해석: 상자에 내용을 담음 , "title"이라는 이름표로 입력받은 title 값을 넣음, "url"이라는 이름표로 빈 값("")을 넣음
 
         pusher.trigger("my-channel","new-post",jsonObject);

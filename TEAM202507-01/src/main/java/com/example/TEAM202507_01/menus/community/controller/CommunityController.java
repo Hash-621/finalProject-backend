@@ -4,9 +4,12 @@ import com.example.TEAM202507_01.alramo.service.AlramoService;
 import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
 import com.example.TEAM202507_01.menus.community.service.CommunityService;
+import com.example.TEAM202507_01.user.dto.UserDto;
 import com.example.TEAM202507_01.user.service.FavoriteService;
+import com.example.TEAM202507_01.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.implementation.bind.MethodDelegationBinder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +29,7 @@ public class CommunityController {
     private final CommunityService communityService;
     private final AlramoService alramoService;
     private final FavoriteService favoriteService;
+    private final UserService userService;
 
     // ==========================================
     // 🚑 1. [긴급 패치] 레거시 경로 지원 (프론트 호환용)
@@ -39,16 +43,22 @@ public class CommunityController {
         log.info("🚑 [Legacy Support] POST /free 요청 감지 - 처리 시작");
         dto.setCategory("FREE");
         long postId = communityService.savePost(dto, files);
-        try { alramoService.sendNewPostNotification(dto.getTitle()); } catch (Exception e) {}
+//        TODO 서비스 시 고쳐야함
+        String postLink = "http://localhost:3000/community/free/" + postId;
+
+        try { alramoService.sendNewPostNotification(dto.getTitle(), postLink);} catch (Exception e) {}
         return ResponseEntity.ok(postId);
     }
 
-    @PostMapping(value = "/recommend", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Long> createRecommendPostLegacy(
+    // [수정] URL 경로: /recommend -> /notice
+    // [수정] 메서드명: createRecommendPostLegacy -> createNoticePostLegacy
+    @PostMapping(value = "/notice", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<Long> createNoticePostLegacy(
             @RequestPart("dto") CommunityDto dto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-        dto.setCategory("RECOMMEND");
+        // [수정] 카테고리 설정: RECOMMEND -> NOTICE
+        dto.setCategory("NOTICE");
         long postId = communityService.savePost(dto, files);
         return ResponseEntity.ok(postId);
     }
@@ -62,9 +72,12 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getPostList("FREE", 1, 100));
     }
 
-    @GetMapping("/recommend")
-    public ResponseEntity<List<CommunityDto>> getRecommendBoardList() {
-        return ResponseEntity.ok(communityService.getPostList("RECOMMEND", 1, 100));
+    // [수정] URL 경로: /recommend -> /notice
+    // [수정] 메서드명: getRecommendBoardList -> getNoticeBoardList
+    @GetMapping("/notice")
+    public ResponseEntity<List<CommunityDto>> getNoticeBoardList() {
+        // [수정] 조회 파라미터: RECOMMEND -> NOTICE
+        return ResponseEntity.ok(communityService.getPostList("NOTICE", 1, 100));
     }
 
     @GetMapping("/posts")
@@ -95,8 +108,8 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.findPostById(id));
     }
 
-    // ✨ [추가된 API] 특정 게시글에 업로드된 모든 파일 경로 목록 조회
-    // 상세 페이지 캐러셀 구현을 위해 반드시 필요합니다.
+    // ... (이하 나머지 코드는 파일 관련, 좋아요, 댓글 기능으로 'recommend' 문자열이 없으므로 그대로 유지) ...
+
     @GetMapping("/post/{id:[0-9]+}/files")
     public ResponseEntity<List<String>> getPostFiles(@PathVariable Long id) {
         log.info("🖼️ 게시글 {} 번의 파일 목록 조회 요청", id);
@@ -111,34 +124,27 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getOtherPostsByUser(userId, currentPostId));
     }
 
-    // ==========================================
-    // 📝 3. 게시글 작성/삭제/이미지 (통합)
-    // ==========================================
-
     @PostMapping("/image-upload")
     public ResponseEntity<String> uploadEditorImage(@RequestPart("file") MultipartFile file) {
         return ResponseEntity.ok(communityService.uploadEditorImage(file));
     }
 
-    @PostMapping(value = "/post", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Long> createPost(
-            @RequestPart("dto") CommunityDto dto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files
-    ) {
-        long postId = communityService.savePost(dto, files);
-        try { alramoService.sendNewPostNotification(dto.getTitle()); } catch (Exception e) {}
-        return ResponseEntity.ok(postId);
-    }
+//    @PostMapping(value = "/post", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+//    public ResponseEntity<Long> createPost(
+//            @RequestPart("dto") CommunityDto dto,
+//            @RequestPart(value = "files", required = false) List<MultipartFile> files
+//    ) {
+//        long postId = communityService.savePost(dto, files);
+//        String postLink = "http://localhost:3000/community/free/" + postId;
+//        try { alramoService.sendNewPostNotification(dto.getTitle(), postLink); } catch (Exception e) {}
+//        return ResponseEntity.ok(postId);
+//    }
 
     @DeleteMapping("/post/{id:[0-9]+}")
     public ResponseEntity<String> deletePost(@PathVariable Long id) {
         communityService.deletePost(id);
         return ResponseEntity.ok("게시글이 삭제되었습니다.");
     }
-
-    // ==========================================
-    // 💬 4. 댓글 (Comment)
-    // ==========================================
 
     @GetMapping("/comments/{postId:[0-9]+}")
     public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
@@ -158,17 +164,35 @@ public class CommunityController {
         return ResponseEntity.ok("댓글이 삭제되었습니다.");
     }
 
-    // ==========================================
-    // ❤️ 5. 좋아요 (Favorite)
-    // ==========================================
-
-    @PostMapping("/post/{id:[0-9]+}/like")
-    public ResponseEntity<?> toggleLike(
+    @PostMapping("/post/{id:[0-9]+}/favorite")
+    public ResponseEntity<?> toggleFavorite(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails user
     ) {
         if (user == null) return ResponseEntity.status(401).body("로그인이 필요합니다.");
         favoriteService.toggleFavorite("COMMUNITY", user.getUsername(), id);
-        return ResponseEntity.ok(Map.of("message", "좋아요 처리 완료"));
+        return ResponseEntity.ok(Map.of("message", "즐겨찾기 처리 완료"));
+    }
+
+    @PostMapping("/post/{id}/like")
+    public ResponseEntity<String> likeIncrease(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        if (user == null) return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        UserDto userDto = userService.findById(user.getUsername());
+        String userId = userDto.getId();
+        communityService.likeIncrease(id, userId);
+
+        return ResponseEntity.ok("좋아요 처리 완료");
+    }
+
+    @GetMapping("/post/{id}/likecount")
+    public ResponseEntity<Integer> likeCount(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(communityService.likeCount(id));
+    }
+
+    @GetMapping("/post/{id}/isuserliked")
+    public ResponseEntity<Boolean> isUserLiked(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        UserDto userDto = userService.findById(user.getUsername());
+        String userId = userDto.getId();
+        return ResponseEntity.ok(communityService.isUserLiked(id, userId));
     }
 }
