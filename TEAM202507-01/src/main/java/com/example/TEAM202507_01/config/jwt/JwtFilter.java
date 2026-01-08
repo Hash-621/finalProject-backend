@@ -84,7 +84,7 @@ public class JwtFilter extends GenericFilterBean {
         // 1. 쿠키에서 먼저 찾기 (우선순위)
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
-                // ★ 중요: 로그에서 확인된 실제 쿠키 이름 "jwt_cookie" 사용
+                // ★ 중요: 로그에서 확인된 실제 쿠키 이름  사용
                 if ("token".equals(c.getName())) {
                     token = c.getValue();
                     break; // 찾았으면 반복문 종료

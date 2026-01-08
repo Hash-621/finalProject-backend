@@ -119,7 +119,7 @@ public class UserController {
         }
         if (output.matches("^kakao_[0-9].+")) {
             return ResponseEntity.ok("kakao");
-        } else if (output.matches("^NAVER_[0-9A-Za-z_]+$")) {
+        } else if (output.matches("^NAVER_[0-9A-Za-z_-]+$")) {
             return ResponseEntity.ok("naver");
         }else {
 

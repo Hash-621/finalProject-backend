@@ -202,7 +202,7 @@ public class UserServiceImpl implements UserService  {
     public boolean checkEmail(String email) {
         int count = userMapper.countByEmail(email);
         if(count > 0) {
-            throw new RuntimeException("이미 가입된 이메일입니다.");
+            return false;
         }
         return true; // 중복 아님 (사용 가능)
     }
@@ -211,7 +211,9 @@ public class UserServiceImpl implements UserService  {
     @Override
     public void getTokenForCheckEmail(String email, String value) {
         // 1. 이메일 중복 검사를 먼저 수행하는 것이 안전합니다.
-        checkEmail(email);
+        if(checkEmail(email)) {
+            return;
+        }
 
         // 2. 메일 발송
         mailService.sendCheckEmail(email, value);

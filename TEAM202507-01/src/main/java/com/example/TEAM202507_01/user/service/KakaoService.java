@@ -37,6 +37,7 @@ public class KakaoService {
     private final UserMapper userMapper;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @Value("${kakao.client-id}")
     private String clientId;
@@ -51,7 +52,7 @@ public class KakaoService {
     private String userInfoUri;
 
     @Transactional
-    public String kakaoLogin(String code) {
+    public String kakaoLogin(String code) throws Exception {
         // 1. "인가 코드"로 "카카오 액세스 토큰" 받기
         String kakaoAccessToken = getKakaoAccessToken(code);
 
@@ -61,6 +62,7 @@ public class KakaoService {
         // 3. 우리 DB에 있는지 확인하고, 없으면 회원가입 시키기
         String kakaoLoginId = "kakao_" + kakaoUserInfo.getId(); // 예: kakao_123456789
         UserDto userDto = registerKakaoUserIfNeed(kakaoLoginId, kakaoUserInfo);
+
 
         // 4. 강제 로그인 처리 (JWT 발급을 위해)
         Authentication authentication = forceLogin(userDto);
@@ -124,15 +126,20 @@ public class KakaoService {
     // 3. 회원가입/조회 로직
     // ... import 문에 CreateUserDTO 추가 ...
 
-    private UserDto registerKakaoUserIfNeed(String loginId, KakaoUserInfo kakaoUserInfo) {
+    private UserDto registerKakaoUserIfNeed(String loginId, KakaoUserInfo kakaoUserInfo) throws Exception {
         // 1. DB에서 조회 (기존 로직 유지)
         UserDto existingUser = userMapper.findByLoginId(loginId);
+        boolean existingEmail = userService.checkEmail(kakaoUserInfo.getKakaoAccount().getEmail());
 
         // 🔥 [디버깅] 카카오가 진짜 데이터를 주는지 콘솔에서 확인!
         System.out.println("====== 카카오 사용자 정보 수신 ======");
         System.out.println("닉네임: " + kakaoUserInfo.getKakaoAccount().getProfile().getNickname());
         System.out.println("이메일: " + kakaoUserInfo.getKakaoAccount().getEmail());
         System.out.println("=================================");
+
+        if (existingUser == null && !existingEmail) {
+            throw new Exception("이미 가입된 이메일 입니다.");
+        }
 
         if (existingUser != null) {
             return existingUser; // 이미 가입된 회원이면 바로 리턴

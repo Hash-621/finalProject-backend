@@ -33,6 +33,7 @@ public class NaverService {
     @Value("${naver.client.secret}")
     private String clientSecret;
 
+    private final UserService userService;
     private final RestTemplate restTemplate;
     private final UserMapper userMapper;
     private final TokenProvider tokenProvider;
@@ -70,7 +71,7 @@ public class NaverService {
     }
 
     // 2. 로그인 처리 및 JWT 발급
-    public TokenDto loginWithNaver(String accessToken) {
+    public TokenDto loginWithNaver(String accessToken) throws Exception {
         // accessToken이 null이면 여기서 바로 예외 처리 (NullPointer 방지)
         if (accessToken == null) {
             log.error("❌ [NaverService] accessToken이 null입니다. 토큰 발급 실패.");
@@ -95,6 +96,11 @@ public class NaverService {
         log.info("   > 가져온 사용자 ID: {}", loginId);
 
         UserDto existingUser = userMapper.findByLoginId(loginId);
+        boolean exitEmail = userService.checkEmail(naverUser.getEmail());
+
+        if(existingUser == null && !exitEmail) {
+            throw new Exception(("이미 존재하는 이메일 입니다"));
+        }
 
         if (existingUser == null) {
             log.info("   > 신규 회원입니다. 회원가입 진행...");

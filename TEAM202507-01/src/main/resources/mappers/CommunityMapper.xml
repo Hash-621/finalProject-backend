@@ -60,6 +60,7 @@
                                                                      P.CREATED_AT AS "createdAt",
                                                                      U.NICKNAME AS "userNickname", P.USER_ID AS "userId",
                                                                      (SELECT COUNT(*) FROM COMMENTS C WHERE C.POST_ID = P.ID AND C.IS_DELETE = 0) AS "commentCount",
+                                                                     (SELECT COUNT(*) FROM POST_LIKES PL WHERE PL.POST_ID = P.ID) AS "likeCount",
                                                                      (SELECT FILE_PATH FROM FILES F WHERE F.TARGET_ID = P.ID AND ROWNUM = 1) AS "filePath"
                                                               FROM POSTS P
                                                                        LEFT JOIN USERS U ON P.USER_ID = U.ID

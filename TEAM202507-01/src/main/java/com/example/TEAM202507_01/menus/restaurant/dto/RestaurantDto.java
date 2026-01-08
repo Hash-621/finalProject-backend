@@ -28,8 +28,6 @@ public class RestaurantDto {
     // 1. 공통 카테고리
     // @JsonAlias("CATEGORY"): 외부 API에서 들어오는 JSON 키값이 "CATEGORY"일 때, 이 필드(category)에 자동으로 넣어달라는 뜻임.
     // 외부 데이터의 이름이 내 변수명과 다를 때 매핑해주기 위해 사용함.
-    @JsonAlias("CATEGORY")
-    private String category;
 
     // 2. 식당 기본 정보
     // 외부 API의 "REST_ID" 값을 id 변수에 매핑함.

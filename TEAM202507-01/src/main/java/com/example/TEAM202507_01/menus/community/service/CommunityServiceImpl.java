@@ -3,6 +3,7 @@ package com.example.TEAM202507_01.menus.community.service;
 import com.example.TEAM202507_01.cleanbot.service.CleanBotService;
 import com.example.TEAM202507_01.menus.community.dto.CommentDto;
 import com.example.TEAM202507_01.menus.community.dto.CommunityDto;
+import com.example.TEAM202507_01.menus.community.repository.CommentMapper;
 import com.example.TEAM202507_01.menus.community.repository.CommunityMapper;
 import com.example.TEAM202507_01.user.repository.MyPageMapper;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class CommunityServiceImpl implements CommunityService {
 
     private final CommunityMapper communityMapper;
+    private final CommentMapper commentMapper;
     private final MyPageMapper myPageMapper;
     private final CleanBotService cleanBotService; // 클린봇 서비스 주입
 
@@ -89,7 +91,7 @@ public class CommunityServiceImpl implements CommunityService {
         if(uuid != null) dto.setUserId(uuid);
 
         // 댓글 DB 저장 (MyBatis에서 parent_id 처리됨)
-        communityMapper.insertComment(dto);
+        commentMapper.save(dto);
     }
 
     // --- 나머지 메서드 유지 ---

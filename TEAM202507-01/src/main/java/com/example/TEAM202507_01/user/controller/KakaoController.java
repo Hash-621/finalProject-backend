@@ -3,6 +3,7 @@ package com.example.TEAM202507_01.user.controller;
 import com.example.TEAM202507_01.config.jwt.TokenDto;
 import com.example.TEAM202507_01.user.service.KakaoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,12 @@ public class KakaoController {
     public ResponseEntity<TokenDto> kakaoCallback(@RequestParam String code) {
 
         // 서비스에서 지지고 볶고 해서 JWT 토큰을 받아옴
-        String jwtToken = kakaoService.kakaoLogin(code);
+        String jwtToken = null;
+        try {
+            jwtToken = kakaoService.kakaoLogin(code);
+        } catch (Exception e) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미 가입된 이메일입니다.");
+        }
 
         // 클라이언트에게 JWT 전달
         return ResponseEntity.ok(TokenDto.builder()

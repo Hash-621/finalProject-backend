@@ -11,7 +11,7 @@
             REST_ADDRESS as address,
             REST_ADDRESS_DETAIL as addressDetail,
             REST_PHONE as phone,
-            REST_OPEN_TIME as openTime,
+            NVL(REST_OPEN_TIME, '매일 09:00~21:00') as openTime,
             REST_CATEGORY as restCategory,
             REST_BEST_MENU as bestMenu,
             REST_MENU as menu,
@@ -24,7 +24,20 @@
     </select>
 
     <select id="findById" resultType="RestaurantDto">
-        SELECT * FROM restaurant
+        SELECT REST_ID as id,
+               REST_NAME as name,
+               REST_ADDRESS as address,
+               REST_ADDRESS_DETAIL as addressDetail,
+               REST_PHONE as phone,
+               NVL(REST_OPEN_TIME, '매일 09:00~22:00') as openTime,
+               REST_CATEGORY as restCategory,
+               REST_BEST_MENU as bestMenu,
+               REST_MENU as menu,
+               REST_MENU_DETAIL as menuDetail,
+               REST_PRICE as price,
+               REST_URL as url,
+               REST_IMAGE as imagePath
+        FROM restaurant
         WHERE REST_ID = #{id}
     </select>
 
@@ -89,10 +102,6 @@
         WHERE REST_ID = #{id}
     </delete>
 
-    <insert id="setFavorite">
-        INSERT INTO fov_list ()
-        VALUES ()
-    </insert>
 
 
 
