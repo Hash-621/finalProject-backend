@@ -61,7 +61,7 @@
             REST_MENU_DETAIL,
             REST_PRICE,
             REST_URL
-            REST_IMAGE
+                REST_IMAGE
         ) VALUES (
                      #{id},
                      #{name},
@@ -101,19 +101,6 @@
         DELETE FROM restaurant
         WHERE REST_ID = #{id}
     </delete>
-
-
-
-
-
-
-
-
-
-
-
-
-
     <update id="updateImage" parameterType="map">
         UPDATE restaurant
         SET REST_IMAGE = #{imagePath}

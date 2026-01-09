@@ -129,16 +129,16 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.uploadEditorImage(file));
     }
 
-//    @PostMapping(value = "/post", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-//    public ResponseEntity<Long> createPost(
-//            @RequestPart("dto") CommunityDto dto,
-//            @RequestPart(value = "files", required = false) List<MultipartFile> files
-//    ) {
-//        long postId = communityService.savePost(dto, files);
-//        String postLink = "http://localhost:3000/community/free/" + postId;
-//        try { alramoService.sendNewPostNotification(dto.getTitle(), postLink); } catch (Exception e) {}
-//        return ResponseEntity.ok(postId);
-//    }
+    @PostMapping(value = "/post", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<Long> createPost(
+            @RequestPart("dto") CommunityDto dto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
+        long postId = communityService.savePost(dto, files);
+        String postLink = "http://localhost:3000/community/free/" + postId;
+        try { alramoService.sendNewPostNotification(dto.getTitle(), postLink); } catch (Exception e) {}
+        return ResponseEntity.ok(postId);
+    }
 
     @DeleteMapping("/post/{id:[0-9]+}")
     public ResponseEntity<String> deletePost(@PathVariable Long id) {

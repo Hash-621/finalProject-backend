@@ -56,7 +56,6 @@
                                  f.FOV_ID AS "id",
                                  f.CATEGORY AS "category",
                                  CASE
-                                     WHEN f.CATEGORY = 'NEWS'        THEN (SELECT title FROM news WHERE TO_CHAR(id) = f.FOV_ID)
                                      WHEN f.CATEGORY = 'JOBS'        THEN (SELECT title FROM job_post WHERE TO_CHAR(id) = f.FOV_ID)
                                      WHEN f.CATEGORY = 'HOSPITALS'   THEN (SELECT NAME FROM HOSPITALS WHERE TO_CHAR(ID) = f.FOV_ID)
                                      -- ▼ 아래 줄이 수정되었습니다 (S 제거) ▼

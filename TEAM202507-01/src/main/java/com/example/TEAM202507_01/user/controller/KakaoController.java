@@ -30,7 +30,7 @@ public class KakaoController {
                 return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new TokenDto());
             }
         } catch (Exception e) {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미 가입된 이메일입니다.");
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // 클라이언트에게 JWT 전달

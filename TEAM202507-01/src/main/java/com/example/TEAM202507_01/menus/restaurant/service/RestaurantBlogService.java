@@ -48,7 +48,7 @@ public class RestaurantBlogService {
                 .fromUriString("https://openapi.naver.com")
                 .path("/v1/search/blog.json")
                 .queryParam("query", query)
-                .queryParam("display", 5) // 5개 정도만
+                .queryParam("display", 100) // 5개 정도만
                 .queryParam("start", 1)
                 .queryParam("sort", "sim")
                 .encode()
