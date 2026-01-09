@@ -63,7 +63,11 @@ public class KakaoService {
         String kakaoLoginId = "kakao_" + kakaoUserInfo.getId(); // 예: kakao_123456789
         UserDto userDto = registerKakaoUserIfNeed(kakaoLoginId, kakaoUserInfo);
 
+        System.out.println(userDto);
 
+        if (userDto.getId() == null) {
+            return null;
+        }
         // 4. 강제 로그인 처리 (JWT 발급을 위해)
         Authentication authentication = forceLogin(userDto);
 
@@ -138,7 +142,7 @@ public class KakaoService {
         System.out.println("=================================");
 
         if (existingUser == null && !existingEmail) {
-            throw new Exception("이미 가입된 이메일 입니다.");
+            return new UserDto();
         }
 
         if (existingUser != null) {

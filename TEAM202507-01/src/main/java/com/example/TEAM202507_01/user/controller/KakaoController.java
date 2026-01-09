@@ -26,6 +26,9 @@ public class KakaoController {
         String jwtToken = null;
         try {
             jwtToken = kakaoService.kakaoLogin(code);
+            if(jwtToken == null){
+                return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new TokenDto());
+            }
         } catch (Exception e) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미 가입된 이메일입니다.");
         }
