@@ -18,7 +18,7 @@ public class ChatBotController {
         // 1. 사용자 질문 추출
         String userMessage = request.get("message");
 
-        // 2. 서비스 호출 (★ 여기를 수정했습니다!)
+        // 2. 서비스 호출
         // getChatResponse -> getContents
         // (GeminiService에 정의된 메서드 이름과 똑같아야 합니다.)
         String aiResponse = geminiService.getContents(userMessage);
