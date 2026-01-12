@@ -65,4 +65,7 @@ public interface CommunityMapper {
     List<CommentDto> selectCommentsByPostId(Long postId);
     void insertComment(CommentDto dto);
     void deleteComment(Long id);
+
+    void deleteAllLike (Long id);
+    void deleteAllComment(Long id);
 }

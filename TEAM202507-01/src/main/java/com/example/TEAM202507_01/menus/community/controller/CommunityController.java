@@ -45,7 +45,6 @@ public class CommunityController {
         long postId = communityService.savePost(dto, files);
 //        TODO 서비스 시 고쳐야함
         String postLink = "http://localhost:3000/community/free/" + postId;
-
         try { alramoService.sendNewPostNotification(dto.getTitle(), postLink);} catch (Exception e) {}
         return ResponseEntity.ok(postId);
     }
@@ -98,15 +97,31 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.getPostList(category.toUpperCase(), page, size));
     }
 
+    // [수정] 상세 조회 시 로그인 유저 정보(user)를 받아서 서비스로 전달
     @GetMapping("/post/{id:[0-9]+}")
-    public ResponseEntity<CommunityDto> getPost(@PathVariable Long id) {
-        return ResponseEntity.ok(communityService.findPostById(id));
+    public ResponseEntity<CommunityDto> getPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails user // 👈 추가: 로그인 정보 확인
+    ) {
+        String currentUserId = (user != null) ? user.getUsername() : null;
+        // Service에 userId도 같이 넘김
+        return ResponseEntity.ok(communityService.findPostById(id, currentUserId));
     }
 
     @GetMapping("/free/{id:[0-9]+}")
-    public ResponseEntity<CommunityDto> getFreePostDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(communityService.findPostById(id));
+    public ResponseEntity<CommunityDto> getFreePostDetail(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        String currentUserId = (user != null) ? user.getUsername() : null;
+        // Service에 userId도 같이 넘김
+        return ResponseEntity.ok(communityService.findPostById(id, currentUserId));
     }
+
+    @DeleteMapping("/free/{id:[0-9]+}")
+    public ResponseEntity<String> deleteFreePost(@PathVariable Long id) {
+        communityService.deleteComment(id);
+        communityService.deletePost(id);
+        return ResponseEntity.ok("게시글이 삭제되었습니다.");
+    }
+
 
     // ... (이하 나머지 코드는 파일 관련, 좋아요, 댓글 기능으로 'recommend' 문자열이 없으므로 그대로 유지) ...
 
@@ -135,13 +150,15 @@ public class CommunityController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         long postId = communityService.savePost(dto, files);
-        String postLink = "http://localhost:3000/community/free/" + postId;
+        String postLink = "http://localhost:3000/community/review/" + postId;
         try { alramoService.sendNewPostNotification(dto.getTitle(), postLink); } catch (Exception e) {}
         return ResponseEntity.ok(postId);
     }
 
     @DeleteMapping("/post/{id:[0-9]+}")
     public ResponseEntity<String> deletePost(@PathVariable Long id) {
+        communityService.deleteAllLike(id);
+        communityService.deleteComment(id);
         communityService.deletePost(id);
         return ResponseEntity.ok("게시글이 삭제되었습니다.");
     }
@@ -175,17 +192,26 @@ public class CommunityController {
     }
 
     @PostMapping("/post/{id}/like")
-    public ResponseEntity<String> likeIncrease(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<Object> likeIncrease(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         if (user == null) return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
         UserDto userDto = userService.findById(user.getUsername());
-        String userId = userDto.getId();
+        String userId = userDto.getId(); // (참고: 아까 UUID 변환 로직 넣었으면 그거 사용)
+
+        // 1. 좋아요 토글 수행
         communityService.likeIncrease(id, userId);
 
-        return ResponseEntity.ok("좋아요 처리 완료");
+        // 2. 🔥 [핵심] 최신 좋아요 개수를 다시 조회
+        int newCount = communityService.likeCount(id);
+
+        // 3. JSON 형태로 반환 (likeCount 필드 포함)
+        return ResponseEntity.ok(Map.of(
+                "likeCount", newCount
+        ));
     }
 
     @GetMapping("/post/{id}/likecount")
-    public ResponseEntity<Integer> likeCount(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<Integer> likeCount(@PathVariable Long id) {
         return ResponseEntity.ok(communityService.likeCount(id));
     }
 

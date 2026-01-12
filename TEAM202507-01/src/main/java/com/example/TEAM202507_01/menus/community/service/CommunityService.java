@@ -9,7 +9,7 @@ import java.util.List;
 public interface CommunityService {
     List<CommunityDto> getPostList(String category, int page, int size);
     List<CommunityDto> findPostsByCategory(String category);
-    CommunityDto findPostById(Long id);
+    CommunityDto findPostById(Long id, String userId);
     List<CommunityDto> getOtherPostsByUser(String userId, Long currentPostId);
     String uploadEditorImage(MultipartFile file);
     long savePost(CommunityDto dto, List<MultipartFile> files);
@@ -28,4 +28,7 @@ public interface CommunityService {
     int likeCount(Long id);
 
     boolean isUserLiked(Long id, String userId);
+
+    void deleteAllLike(Long id);
+    void deleteAllComment(Long id);
 }

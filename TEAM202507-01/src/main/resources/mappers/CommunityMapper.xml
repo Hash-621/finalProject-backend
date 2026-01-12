@@ -148,4 +148,15 @@
         SELECT COUNT(*) FROM POST_LIKES WHERE POST_ID = #{id}
     </select>
 
+    <delete id="deleteAllLike">
+        DELETE FROM POST_LIKES
+        WHERE POST_ID = #{id}
+    </delete>
+
+
+    <delete id="deleteAllComment">
+        DELETE FROM COMMENTS
+        WHERE POST_ID = #{id}
+    </delete>
+
 </mapper>

@@ -18,5 +18,4 @@
         DELETE FROM FOV_LIST
         WHERE CATEGORY = #{category} AND USER_ID = #{userId} AND FOV_ID = #{fovId}
     </delete>
-
 </mapper>

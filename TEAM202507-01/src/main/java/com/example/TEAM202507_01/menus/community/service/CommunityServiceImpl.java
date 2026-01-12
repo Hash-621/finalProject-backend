@@ -108,9 +108,22 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional(readOnly = true)
-    public CommunityDto findPostById(Long id) {
+    public CommunityDto findPostById(Long id, String userId) {
         communityMapper.viewCountIncrease(id);
-        return communityMapper.selectPostById(id);
+        CommunityDto dto = communityMapper.selectPostById(id);
+        // NullPointException 방지용
+        dto.setIsLiked(false);
+        if (userId != null) {
+            // 🔥 [핵심 수정] 로그인 ID("hansh")를 UUID("a0b9...")로 변환해야 DB에서 찾을 수 있음
+            String uuid = myPageMapper.findUuidByLoginId(userId);
+
+            // uuid가 있으면 그걸 쓰고, 없으면 그냥 원래 ID 사용 (방어 코드)
+            String targetUserId = (uuid != null) ? uuid : userId;
+
+            int count = communityMapper.likeExists(id, targetUserId);
+            dto.setIsLiked(count > 0);
+        }
+        return dto;
     }
 
     @Override
@@ -187,4 +200,16 @@ public class CommunityServiceImpl implements CommunityService {
     public int likeCount(Long id) {
         return communityMapper.likeCount(id);
     }
+
+    @Override
+    public void deleteAllLike(Long id) {
+        communityMapper.deleteAllLike(id);
+    }
+
+    @Override
+    public void deleteAllComment(Long id){
+        communityMapper.deleteAllComment(id);
+    }
 }
+
+

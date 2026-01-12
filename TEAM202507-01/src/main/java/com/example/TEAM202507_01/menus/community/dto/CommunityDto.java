@@ -24,7 +24,7 @@ public class CommunityDto {
     private LocalDateTime createdAt; // 작성일시.
     private String userId;// 작성자 아이디 (FK).
     // [수정] RECOMMEND -> NOTICE로 변경 주석 반영
-    private String category;    // 게시판 종류 (FREE: 자유, RECOMMEND: 추천).
+    private String category;    // 게시판 종류 (FREE: 자유, review: 추천).
     private LocalDateTime updatedAt; // 수정일시.
     private Long viewCount;     // 조회수.
 
@@ -32,4 +32,5 @@ public class CommunityDto {
     private String userNickname; // 작성자 닉네임.
     private int commentCount;
     private int likeCount;
+    private Boolean isLiked;
 }

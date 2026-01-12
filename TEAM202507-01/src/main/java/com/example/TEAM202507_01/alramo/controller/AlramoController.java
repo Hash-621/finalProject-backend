@@ -1,5 +1,6 @@
-package com.example.TEAM202507_01.alramo.controller;
+package com.example.TEAM202507_01.alramo.controller; // 이 파일이 위치한 폴더 경로(패키지)입니다.
 
+// 다른 패키지에 있는 서비스 클래스와 필요한 라이브러리들을 가져옵니다.
 import com.example.TEAM202507_01.alramo.service.AlramoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -7,30 +8,31 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// @RestController: "나는 화면(HTML)을 주는 게 아니라, 데이터(JSON, String 등)를 주는 웨이터(컨트롤러)야"라고 스프링에게 알립니다.
 @RestController
-//의미: 이 클래스가 Restful 웹 서비스의 컨트롤러임을 선언
 
+// @RequestMapping("api/v1"): "내 담당 구역은 주소창에 'api/v1'이라고 적힌 요청들이야." (기본 경로 설정)
 @RequestMapping("api/v1")
-//의미: 이 컨트롤러로 들어오는 기본 주소(URL)를 설정
 
+// @AllArgsConstructor: "내 안에 있는 final 변수(alramoService)를 채워주는 생성자를 롬복 네가 알아서 만들어줘." (의존성 주입 자동화)
 @AllArgsConstructor
-//의미: 롬복(Lombok) 라이브러리 기능, 모든 필드(변수)를 초기화하는 생성자를 자동으로 만들어 줌
-
 public class AlramoController {
+
+    // AlramoService를 사용하기 위해 변수로 선언합니다.
+    // private final: "이 변수는 나만 쓸 거고, 처음에 한 번 정해지면 절대 안 바꿔." (안전장치)
+    // 위쪽의 @AllArgsConstructor 덕분에 스프링이 알아서 알맞은 서비스를 여기에 꽂아줍니다.
     private final AlramoService alramoService;
-    // AlramoService 타입의 변수 alramoService를 선언
-    //private: 이 클래스 내부에서만 쓰겠다 (외부 접근 금지).
-    // final: 한 번 정해지면 절대 바뀌지 않는다는 뜻. 필수적으로 값이 채워져야 함을 의미
 
+    // @GetMapping("/test"): "누가 'GET' 방식으로 '/test' 주소로 들어오면 이 함수를 실행해."
+    // 최종 주소: /api/v1/test
     @GetMapping("/test")
-    //의미: HTTP 요청 중 GET 방식으로 들어오는 요청을 처리
-    //private: 이 클래스 내부에서만 쓰겠다 (외부 접근 금지).
-
     public ResponseEntity<String> test() {
-//        alramoService.sendNewPostNotification();
 
+        // [중요] 현재는 주석 처리되어 있어 실행되지 않지만,
+        // 주석을 풀면 서비스에게 "새 글 알림 보내!"라고 명령하는 코드입니다.
+        // alramoService.sendNewPostNotification();
+
+        // ResponseEntity.ok(...): "모든 게 정상이야(200 OK)."라며 봉투에 "This is a test"라는 편지를 담아 사용자에게 줍니다.
         return ResponseEntity.ok("This is a test");
-        //해석: ok라는 상태(HTTP 200 성공)와 함께 "This is a test"라는 글자를 담아서 사용자에게 돌려줌
-
     }
 }
