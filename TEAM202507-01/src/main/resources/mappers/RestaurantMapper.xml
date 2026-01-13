@@ -42,7 +42,7 @@
     </select>
 
     <select id="findNameById" resultType="RestaurantDto">
-        SELECT REST_ID as id, REST_NAME as name
+        SELECT REST_ID as id, REST_NAME as name, REST_ADDRESS as address
         FROM RESTAURANT
         WHERE REST_ID = #{id}
     </select>

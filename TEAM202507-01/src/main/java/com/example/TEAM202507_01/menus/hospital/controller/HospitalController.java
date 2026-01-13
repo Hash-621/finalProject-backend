@@ -1,8 +1,11 @@
 package com.example.TEAM202507_01.menus.hospital.controller;
 
 import com.example.TEAM202507_01.config.security.CustomUserDetails;
+import com.example.TEAM202507_01.menus.hospital.dto.AiDiagnosisDto;
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalDto;
 import com.example.TEAM202507_01.menus.hospital.dto.HospitalMapDto;
+// ⚠️ [중요] GeminiService의 실제 패키지 경로를 확인하세요.
+import com.example.TEAM202507_01.menus.chatbot.service.GeminiService;
 import com.example.TEAM202507_01.menus.hospital.service.HospitalService;
 import com.example.TEAM202507_01.user.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,32 +25,29 @@ public class HospitalController {
     private final HospitalService hospitalService;
     private final FavoriteService favoriteService;
 
+    // ✅ [수정] GeminiService 주입 (필드 추가)
+    private final GeminiService geminiService;
+
     // 1. 목록 조회 (GET)
-    // [수정]: 반환 타입을 List<Hospital> -> List<HospitalDto>로 변경
     @GetMapping
     public ResponseEntity<List<HospitalDto>> getHospitalList() {
-        // 서비스가 DTO 리스트를 반환하므로, 컨트롤러도 DTO 리스트를 반환해야 합니다.
         return ResponseEntity.ok(hospitalService.findAll());
     }
 
     @GetMapping("/map")
     public ResponseEntity<List<HospitalMapDto>> getHospitalInfo() {
-        // 서비스가 DTO 리스트를 반환하므로, 컨트롤러도 DTO 리스트를 반환해야 합니다.
         return ResponseEntity.ok(hospitalService.findInfo());
     }
 
     // 2. 상세 조회 (GET)
-    // [수정]: 반환 타입을 Hospital -> HospitalDto로 변경
     @GetMapping("/{id}")
     public ResponseEntity<HospitalDto> getHospitalDetail(@PathVariable Long id) {
-        // 서비스가 DTO를 반환하므로, 여기서도 DTO로 받아야 오류가 사라집니다.
         return ResponseEntity.ok(hospitalService.findById(id));
     }
 
     // 3. 등록 및 수정 (POST)
     @PostMapping
     public ResponseEntity<String> createHospital(@RequestBody HospitalDto hospitalDto) {
-        // DTO 내용을 원본(Entity)으로 옮겨 담는 과정 (빌더 패턴 사용)
         HospitalDto hospital = HospitalDto.builder()
                 .id(hospitalDto.getId())
                 .category(hospitalDto.getCategory())
@@ -65,58 +67,64 @@ public class HospitalController {
         hospitalService.delete(id);
         return ResponseEntity.ok("병원 삭제 성공");
     }
+
     // 5. 즐겨찾기 토글
     @PostMapping("/{id}/favorite")
     public ResponseEntity<String> hospitalFavorite(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUserDetails userDetails // 🔥 현재 로그인한 사용자 정보
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        // 로그인 안 했으면 401 에러 반환
         if (userDetails == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
         String userId = userDetails.getId();
-        // 즐겨찾기 서비스 호출 (카테고리, 유저ID, 식당ID)
         favoriteService.toggleFavorite("HOSPITALS", userId, id);
 
         return ResponseEntity.ok("즐겨찾기 처리가 완료되었습니다.");
     }
 
+    // ==========================================
+    // 6. 🔥 [신규] AI 증상 분석 및 병원 추천 (POST /ai-diagnosis)
+    // ==========================================
+    @PostMapping("/ai-diagnosis")
+    public ResponseEntity<AiDiagnosisDto> diagnoseSymptom(@RequestBody Map<String, String> request) {
+        String symptom = request.get("symptom"); // 사용자 입력 증상
 
+        // 1. AI에게 물어보기 ("이 증상은 무슨 과야?")
+        String department = geminiService.analyzeSymptom(symptom);
 
+        // 2. 해당 진료과 병원 찾기
+        List<HospitalDto> allHospitals = hospitalService.findAll();
+
+        // 🔥 [필터링 로직 개선]
+        // 단순히 treatCategory만 보는게 아니라, 병원 이름(name)이나 종합병원(category) 여부도 확인합니다.
+        List<HospitalDto> recommendedHospitals = allHospitals.stream()
+                .filter(h -> {
+                    // (1) 진료과목(treatCategory)에 포함되는지? (ex: "소화기내과"에 "내과" 포함)
+                    boolean matchTreat = h.getTreatCategory() != null && h.getTreatCategory().contains(department);
+
+                    // (2) 병원 이름(name)에 포함되는지? (ex: "둔산내과"에 "내과" 포함)
+                    boolean matchName = h.getName() != null && h.getName().contains(department);
+
+                    // (3) 종합병원인가? (종합병원은 모든 과가 있으므로 추천에 포함)
+                    boolean isGeneral = "종합병원".equals(h.getCategory()) || "종합병원".equals(h.getTreatCategory());
+
+                    // 위 조건 중 하나라도 맞으면 결과에 포함
+                    return matchTreat || matchName || isGeneral;
+                })
+                .limit(5) // 결과가 너무 많으면 5개만 추림
+                .collect(Collectors.toList());
+
+        // 3. 결과 포장
+        AiDiagnosisDto result = AiDiagnosisDto.builder()
+                .symptom(symptom)
+                .recommendedDept(department)
+                .advice(department + " 전문의의 진료를 받아보시는 것을 권장합니다. (종합병원 포함)")
+                .hospitals(recommendedHospitals)
+                .build();
+
+        return ResponseEntity.ok(result);
+    }
 }
 
-///전체구조 및 연결 흐름 ///
-
-//1.사용자 (Client):
-// URL: POST /api/v1/hospital
-//Body: { "name": "대전 한국병원", "category": "종합병원", ... }
-
-//2.Controller (HospitalController):
-//createHospital 메서드 작동.
-//JSON을 HospitalDto로 받음
-//hospitalService.save(hospital) 호출
-
-//3.Service (HospitalServiceImpl):
-//save 메서드 작동.
-//ID가 null인지 확인 (새 등록이므로 null임).
-//hospitalMapper.save(hospital) 호출.
-
-//4.Mapper (HospitalMapper + xml):
-//XML의 <insert id="save"> 실행.
-//DB에 INSERT INTO HOSPITALS ... 쿼리 날림.
-//데이터 저장 완료.
-
-//5.Return Path:
-//DB -> Mapper -> Service -> Controller -> 사용자에게 "병원등록 성공" 응답.
-
-//Controller: 프론트엔드와 대화하는 창구.
-
-//Service: 로직을 처리하고 데이터의 형태를 가공(Entity <-> DTO)하는 공장.
-
-//Mapper: DB 쿼리를 관리하는 창고지기.
-
-//DTO: 각 계층을 오가는 데이터 상자.
-
-//XML: 실제 SQL 쿼리문이 적혀있는 주문서.

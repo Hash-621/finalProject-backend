@@ -25,33 +25,14 @@ public class ChatBotController {
         // geminiService 안에 있는 getContents 메서드가 실제 일을 다 합니다.
         String aiResponse = geminiService.getContents(userMessage);
 
+        // 🔥 [추가된 안전장치] AI 응답이 혹시라도 null이면 에러(NullPointerException)가 터집니다.
+        // 그래서 null일 경우 기본 메시지를 넣어줍니다.
+        if (aiResponse == null) {
+            aiResponse = "죄송합니다. 현재 AI 서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.";
+        }
+
         // 10. [Return] AI의 답변을 다시 JSON { "response": "성심당 추천합니다!" } 형태로 포장해서 돌려줍니다.
+        // Map.of()는 값에 null이 들어오면 에러가 나므로, 위에서 안전장치를 거친 aiResponse를 넣습니다.
         return ResponseEntity.ok(Map.of("response", aiResponse));
     }
 }
-//
-//질문 접수 (Controller):
-//
-//사용자가 "배고파, 맛집 추천 좀"이라고 입력하면 컨트롤러가 받습니다.
-//
-//데이터 조회 (Service):
-//
-//서비스는 AI에게 바로 물어보지 않고, 먼저 우리 DB에서 맛집 목록과 관광지 목록을 싹 긁어옵니다. (약 50개씩)
-//
-//프롬프트 조립 (Prompt Engineering):
-//
-//AI에게 보낼 편지를 씁니다.
-//
-//        "너는 대전 전문가야. 그리고 여기 우리 DB에 있는 맛집 리스트(성심당, 칼국수집...)랑 관광지 리스트(수목원, 엑스포...)가 있어. 이 데이터 안에서만 추천해줘."
-//
-//그리고 마지막에 사용자의 질문("배고파")을 붙입니다.
-//
-//AI 호출 (API Call):
-//
-//완성된 긴 편지를 구글 Gemini 서버로 보냅니다.
-//
-//답변 생성 및 반환:
-//
-//Gemini는 편지를 읽고 "아, 이 리스트 중에 성심당이 좋겠군. 성심당 어때요?"라고 답변을 만듭니다.
-//
-//서비스는 이 답변을 받아서 사용자에게 전달합니다.

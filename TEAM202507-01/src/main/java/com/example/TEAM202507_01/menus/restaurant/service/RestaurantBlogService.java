@@ -63,7 +63,9 @@ public class RestaurantBlogService {
 
         // 2. 검색어 만들기
         // 그냥 "성심당"보다 "대전 성심당"이라고 검색해야 더 정확한 맛집 리뷰가 나옵니다.
+        // 주소 검색으로 변경
         String query = "대전 " + restaurant.getName();
+
 
         // 3. URI(주소) 생성
         // 결과 예시: https://openapi.naver.com/v1/search/blog.json?query=대전 성심당&display=100...

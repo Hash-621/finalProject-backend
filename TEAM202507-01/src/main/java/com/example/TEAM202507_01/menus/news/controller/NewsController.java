@@ -72,7 +72,7 @@ public class NewsController {
             @RequestParam(defaultValue = "") String query // 검색어 (기본값 빈칸)
     ) {
         // [로직 1]: 한 번에 화면에 보여줄 뉴스 개수를 8개로 정합니다.
-        int display = 8;
+        int display = 12;
 
         // [로직 2]: 시작 위치(start) 계산 공식
         // 네이버 API 등은 '몇 페이지'가 아니라 '몇 번째 데이터부터'인지(start)를 원합니다.

@@ -30,71 +30,99 @@ public class CommunityServiceImpl implements CommunityService {
     private final MyPageMapper myPageMapper;
     private final CleanBotService cleanBotService; // 클린봇 서비스 주입
 
+    // 파일 저장 경로 (프로젝트 폴더 내 uploads 폴더)
     private final Path UPLOAD_PATH = Paths.get("uploads").toAbsolutePath();
 
-    // 1. 게시글 저장 (클린봇 필터링 적용)
+    // ====================================================
+    // 1. 게시글 저장 (파일 저장 로직 활성화!)
+    // ====================================================
     @Override
     @Transactional
     public long savePost(CommunityDto dto, List<MultipartFile> files) {
-        // 🔥 [CleanBot] 제목과 내용(JSON 블록 데이터) 검사
+        // 1. [CleanBot] 내용 검사
         if (cleanBotService != null) {
             log.info("🤖 [CleanBot] 게시글 텍스트 검증 시작");
             cleanBotService.checkContent(dto.getTitle()); // 제목 검사
             cleanBotService.checkContent(dto.getContent()); // 에디터 본문 검사
         }
 
-        // 유저 고유 ID(UUID) 조회 및 설정
+        // 2. 유저 ID 변환 (로그인 ID -> UUID)
         String uuid = myPageMapper.findUuidByLoginId(dto.getUserId());
         if (uuid != null) dto.setUserId(uuid);
 
-        System.out.println(dto);
-        // 게시글 DB 저장
-        communityMapper.insertPost(dto);
-        Long postId = dto.getId();
+        System.out.println("게시글 등록 요청: " + dto);
 
-//        // 파일 저장 로직 (Identity 설정에 맞춤)
-//        if (files != null && !files.isEmpty()) {
-//            File dir = UPLOAD_PATH.toFile();
-//            if (!dir.exists()) dir.mkdirs();
-//
-//            for (MultipartFile file : files) {
-//                if (file.isEmpty()) continue;
-//                try {
-//                    String originalName = file.getOriginalFilename();
-//                    String ext = originalName.substring(originalName.lastIndexOf("."));
-//                    String savedName = UUID.randomUUID().toString() + ext;
-//
-//                    file.transferTo(new File(dir, savedName));
-//
-//                    // FILES 테이블에 저장 (Identity 컬럼 제외 쿼리 호출)
-//                    communityMapper.insertFile(postId, dto.getCategory(), originalName, savedName, "/images/" + savedName);
-//                } catch (IOException e) {
-//                    log.error("파일 저장 중 오류 발생", e);
-//                }
-//            }
-//        }
+        // 3. 게시글 DB 저장
+        communityMapper.insertPost(dto);
+        Long postId = dto.getId(); // 저장된 글 번호(PK) 가져오기
+
+        // 4. 🔥 [수정됨] 파일 저장 로직 (주석 해제 완료!)
+        if (files != null && !files.isEmpty()) {
+            File dir = UPLOAD_PATH.toFile();
+            // 폴더가 없으면 생성
+            if (!dir.exists()) dir.mkdirs();
+
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) continue;
+                try {
+                    String originalName = file.getOriginalFilename();
+
+                    // 확장자 추출 (안전하게 처리)
+                    String ext = "";
+                    if (originalName != null && originalName.contains(".")) {
+                        ext = originalName.substring(originalName.lastIndexOf("."));
+                    }
+
+                    // 서버에 저장될 파일명 (UUID + 확장자) -> 중복 방지
+                    String savedName = UUID.randomUUID().toString() + ext;
+
+                    // 실제 파일 저장 (uploads 폴더에)
+                    file.transferTo(new File(dir, savedName));
+
+                    // DB에 파일 정보 저장 (웹 접근 경로는 /images/...)
+                    // insertFile 파라미터 순서: targetId, category, originalName, savedName, filePath
+                    communityMapper.insertFile(
+                            postId,
+                            dto.getCategory(),
+                            originalName,
+                            savedName,
+                            "/images/" + savedName
+                    );
+
+                    log.info("📁 파일 저장 완료: {}", originalName);
+
+                } catch (IOException e) {
+                    log.error("파일 저장 중 오류 발생", e);
+                    // 파일 하나 실패해도 게시글 저장은 유지 (필요 시 throw로 변경 가능)
+                }
+            }
+        }
         return postId;
     }
 
-    // 2. 댓글 및 답글 저장 (클린봇 필터링 적용)
+    // ====================================================
+    // 2. 댓글 저장
+    // ====================================================
     @Override
     @Transactional
     public void saveComment(CommentDto dto) {
-        // 🔥 [CleanBot] 댓글/답글 내용 검사
+        // [CleanBot] 댓글 필터링
         if (cleanBotService != null) {
             log.info("🤖 [CleanBot] 댓글 필터링 시작");
             cleanBotService.checkContent(dto.getContent());
         }
 
-        // 유저 고유 ID(UUID) 조회 및 설정
+        // 유저 ID 변환
         String uuid = myPageMapper.findUuidByLoginId(dto.getUserId());
         if(uuid != null) dto.setUserId(uuid);
 
-        // 댓글 DB 저장 (MyBatis에서 parent_id 처리됨)
+        // DB 저장
         commentMapper.save(dto);
     }
 
-    // --- 나머지 메서드 유지 ---
+    // ====================================================
+    // 3. 조회 및 기타 기능 (기존 유지)
+    // ====================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -111,13 +139,11 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityDto findPostById(Long id, String userId) {
         communityMapper.viewCountIncrease(id);
         CommunityDto dto = communityMapper.selectPostById(id);
-        // NullPointException 방지용
+
+        // Null 방지 및 좋아요 여부 확인
         dto.setIsLiked(false);
         if (userId != null) {
-            // 🔥 [핵심 수정] 로그인 ID("hansh")를 UUID("a0b9...")로 변환해야 DB에서 찾을 수 있음
             String uuid = myPageMapper.findUuidByLoginId(userId);
-
-            // uuid가 있으면 그걸 쓰고, 없으면 그냥 원래 ID 사용 (방어 코드)
             String targetUserId = (uuid != null) ? uuid : userId;
 
             int count = communityMapper.likeExists(id, targetUserId);
@@ -129,6 +155,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getFilePathsByPostId(Long postId) {
+        // DB에서 해당 게시글의 파일 경로 목록 조회
         return communityMapper.selectFilePathsByPostId(postId);
     }
 
@@ -157,38 +184,34 @@ public class CommunityServiceImpl implements CommunityService {
     public void deletePost(Long id) {
         communityMapper.deletePost(id);
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<CommentDto> findCommentsByPostId(Long postId) {
         return communityMapper.selectCommentsByPostId(postId);
     }
+
     @Override
     @Transactional
     public void deleteComment(Long id) {
         communityMapper.deleteComment(id);
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<CommunityDto> findPostsByCategory(String category) {
         return communityMapper.selectPostsByCategoryPaging(category, 0, 100);
     }
 
-
     @Override
     public boolean isUserLiked(Long id, String userId){
         int count = communityMapper.likeExists(id, userId);
-
-        if (count < 1) {
-            return false;
-        } else {
-            return true;
-        }
+        return count >= 1;
     }
 
     @Override
     public void likeIncrease(Long id, String userId) {
         int count = communityMapper.likeExists(id, userId);
-
         if (count < 1) {
             communityMapper.likeIncrease(id, userId);
         } else {
@@ -211,5 +234,3 @@ public class CommunityServiceImpl implements CommunityService {
         communityMapper.deleteAllComment(id);
     }
 }
-
-
