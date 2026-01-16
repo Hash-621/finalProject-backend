@@ -4,6 +4,7 @@ package com.example.TEAM202507_01.admin.controller;
 import com.example.TEAM202507_01.admin.dto.AdminDto;
 import com.example.TEAM202507_01.admin.repository.AdminMapper;
 import com.example.TEAM202507_01.admin.service.AdminService;
+import com.example.TEAM202507_01.admin.service.DockerMonitorService;
 import com.example.TEAM202507_01.user.dto.UserAuthDto;
 import com.example.TEAM202507_01.user.repository.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j // 로그를 찍기 위한 어노테이션 (디버깅용)
@@ -24,16 +28,36 @@ public class AdminController {
     private final AdminMapper adminMapper;
     private final AdminService adminService;
     private final UserMapper userMapper;
+    private final DockerMonitorService dockerMonitorService;
 
     // --- [1. 대시보드 통계 조회 API] ---
     // 프론트엔드에서 GET /api/v1/admin/stats 요청을 보내면 실행됩니다.
     @GetMapping("/stats")
     public ResponseEntity<?> getDashboardStats() {
-        // 1. 서비스에게 통계 데이터를 만들어오라고 시킵니다.
-        // 서비스는 DB에서 방문자 수, 유입 경로, CPU 상태 등을 싹 긁어모아 AdminDto로 포장해옵니다.
+        // 1. 기존 서비스에서 방문자 수, 유입 경로 등 DB 데이터를 가져옵니다.
+        // (이 시점에서는 serverTraffic 부분이 비어있거나 옛날 값일 수 있습니다)
         AdminDto response = adminService.getDashboardStats();
 
-        // 2. 포장된 데이터를 200 OK 상태코드와 함께 반환합니다.
+        // 2. 도커 모니터링 서비스에서 '실시간' CPU 전체 사용량을 가져옵니다.
+        double realTimeCpuUsage = dockerMonitorService.getTotalCpuUsage();
+
+        // 3. 가져온 CPU 데이터를 DTO에 주입(Update)합니다.
+        // 프론트엔드가 배열 형태(List)를 원하므로 리스트로 감싸서 넣어줍니다.
+
+        // ServerTraffic 객체 생성 (DTO 구조에 따라 new ServerTraffic() 부분은 달라질 수 있음)
+        AdminDto.ServerTraffic traffic = new AdminDto.ServerTraffic();
+
+        // 라벨: 현재 시간 (예: "14:30:05")
+        String currentTimeLabel = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        traffic.setLabels(List.of(currentTimeLabel));
+
+        // 데이터: cAdvisor에서 가져온 CPU 값
+        traffic.setCpu(List.of(realTimeCpuUsage));
+
+        // 최종적으로 response 객체에 덮어씌웁니다.
+        response.setServerTraffic(traffic);
+
+        // 4. 완성된 데이터를 반환합니다.
         return ResponseEntity.ok(response);
     }
 
