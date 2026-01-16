@@ -211,7 +211,8 @@ public class UserServiceImpl implements UserService  {
     @Override
     public void getTokenForCheckEmail(String email, String value) {
         // 1. 이메일 중복 검사를 먼저 수행하는 것이 안전합니다.
-        if(checkEmail(email)) {
+        if(!checkEmail(email)) {
+            System.out.println("!!메일 중복!!");
             return;
         }
 

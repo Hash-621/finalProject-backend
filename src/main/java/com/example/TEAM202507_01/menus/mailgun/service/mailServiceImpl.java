@@ -88,16 +88,19 @@ public class mailServiceImpl implements mailService {
     // [13] 서버의 주소와 포트를 설정 파일에서 가져오거나 수동 설정합니다.
     @Value("${server.address}")
     String domain; // 예: localhost 또는 실제 사이트 도메인
-    String port = "3000"; // 리액트(프론트엔드) 포트 번호
+//    String port = "3000"; // 리액트(프론트엔드) 포트 번호
 
     // ==========================================
     // 3. 비밀번호 재설정 링크 메일 발송
     // ==========================================
     @Override
     public void sendResetPwMail(String addr, String token) {
+        if (domain.equals("0.0.0.0")) {
+            domain = "192.168.0.134";
+        }
         // [14] 사용자가 클릭할 '비밀번호 재설정 페이지'의 전체 주소를 만듭니다.
         // 토큰과 이메일을 파라미터로 붙여서 보안을 유지합니다.
-        String link ="http://"+ domain + ":" + port + "/resetPw?token=" + token + "&email=" + addr;
+        String link ="http://"+ domain + "/resetPw?token=" + token + "&email=" + addr;
 
         // [15] mailForm 공장에서 '비밀번호 재설정용(버튼 포함) 디자인'을 가져옵니다.
         String text = mailForm.passwordSend(link);
