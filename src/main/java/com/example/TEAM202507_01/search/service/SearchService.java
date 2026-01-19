@@ -20,9 +20,9 @@ public interface SearchService {
     // 각 도메인별로 따로 옮기기 위한 메서드들
     String restaurantDtoToEs();
     String tourDtoToEs();
-    String tourPostDtoToEs();
+//    String tourPostDtoToEs();
 //  String newsDtoToEs();
-    String jobUserPostDtoToEs();
+//    String jobUserPostDtoToEs();
     String jobDtoToEs();
     String hospitalDtoToEs();
     String communityPostDtoToEs();

@@ -41,14 +41,14 @@ public class SearchServiceImpl implements SearchService {
     private final CommunityMapper  communityMapper;
     private final RestaurantSearchRepository restaurantRepository;
     private final TourSearchRepository tourRepository;
-    private final TourPostSearchRepository tourPostRepository;
+//    private final TourPostSearchRepository tourPostRepository;
     //    private final NewsSearchRepository newsRepository;
     private final JobSearchRepository jobRepository;
-    private final JobUserPostSearchRepository jobUserPostRepository;
+//    private final JobUserPostSearchRepository jobUserPostRepository;
     private final HospitalSearchRepository hospitalRepository;
     private final CommunityPostSearchRepository communityPostRepository;
-    private final JobUserPostMapper jobUserPostMapper;
-    private final TourPostMapper tourPostMapper;
+//    private final JobUserPostMapper jobUserPostMapper;
+//    private final TourPostMapper tourPostMapper;
 
 
     @Transactional(readOnly = true)
@@ -59,10 +59,10 @@ public class SearchServiceImpl implements SearchService {
             return SearchDto.builder()
                     .restaurants(List.of())
                     .tours(List.of())
-                    .tourPosts(List.of())
+//                    .tourPosts(List.of())
 //                    .news(List.of())
                     .jobs(List.of())
-                    .jobPosts(List.of())
+//                    .jobPosts(List.of())
                     .hospitals(List.of())
                     .communityPosts(List.of())
                     .build();
@@ -75,7 +75,7 @@ public class SearchServiceImpl implements SearchService {
         List<TourDocument> tours = tourRepository.searchByKeyword(keyword);
 
         // 3. 관광지 후기 검색
-        List<TourPostDocument> tourPosts = tourPostRepository.searchByKeyword(keyword);
+//        List<TourPostDocument> tourPosts = tourPostRepository.searchByKeyword(keyword);
 
         // 4. 뉴스 검색
 //        List<NewsDocument> news = newsRepository.searchByKeyword(keyword);
@@ -84,7 +84,7 @@ public class SearchServiceImpl implements SearchService {
         List<JobDocument> jobs = jobRepository.searchByKeyword(keyword);
 
         // 6. 개인 이력서 검색
-        List<JobUserPostDocument> jobPosts = jobUserPostRepository.searchByKeyword(keyword);
+//        List<JobUserPostDocument> jobPosts = jobUserPostRepository.searchByKeyword(keyword);
 
         // 7. 병원 검색
         List<HospitalDocument> hospitals = hospitalRepository.searchByKeyword(keyword);
@@ -96,10 +96,10 @@ public class SearchServiceImpl implements SearchService {
         return SearchDto.builder()
                 .restaurants(restaurants)
                 .tours(tours)
-                .tourPosts(tourPosts)
+//                .tourPosts(tourPosts)
 //               .news(news)
                 .jobs(jobs)
-                .jobPosts(jobPosts)
+//                .jobPosts(jobPosts)
                 .hospitals(hospitals)
                 .communityPosts(communityPosts)
                 .build();
@@ -113,10 +113,10 @@ public class SearchServiceImpl implements SearchService {
 
         result.append(restaurantDtoToEs()).append("\n");
         result.append(tourDtoToEs()).append("\n");
-        result.append(tourPostDtoToEs()).append("\n");
+//        result.append(tourPostDtoToEs()).append("\n");
 //        result.append(newsDtoToEs()).append("\n");
         result.append(jobDtoToEs()).append("\n");
-        result.append(jobUserPostDtoToEs()).append("\n");
+//        result.append(jobUserPostDtoToEs()).append("\n");
         result.append(hospitalDtoToEs()).append("\n");
         result.append(communityPostDtoToEs());
 
@@ -179,26 +179,26 @@ public class SearchServiceImpl implements SearchService {
     // =========================================================
     // 3. 관광지 후기 (TourPost)
     // =========================================================
-    public String tourPostDtoToEs() {
-        List<TourPostDto> dbList = tourPostMapper.findAll();
-        if (dbList.isEmpty()) return "관광지후기: 데이터 없음";
-
-        List<TourPostDocument> docList = dbList.stream()
-                .map(dto -> TourPostDocument.builder()
-                        .id(dto.getId())
-                        .title(dto.getTitle())
-                        .content(dto.getContent())
-                        .userId(dto.getUserId())
-                        .category(dto.getCategory())
-                        .viewCount(dto.getViewCount())
-                        .createdAt(dto.getCreatedAt())
-                        .updatedAt(dto.getUpdatedAt())
-                        .build())
-                .collect(Collectors.toList());
-
-        tourPostRepository.saveAll(docList);
-        return "관광지후기: " + docList.size() + "건 완료";
-    }
+//    public String tourPostDtoToEs() {
+//        List<TourPostDto> dbList = tourPostMapper.findAll();
+//        if (dbList.isEmpty()) return "관광지후기: 데이터 없음";
+//
+//        List<TourPostDocument> docList = dbList.stream()
+//                .map(dto -> TourPostDocument.builder()
+//                        .id(dto.getId())
+//                        .title(dto.getTitle())
+//                        .content(dto.getContent())
+//                        .userId(dto.getUserId())
+//                        .category(dto.getCategory())
+//                        .viewCount(dto.getViewCount())
+//                        .createdAt(dto.getCreatedAt())
+//                        .updatedAt(dto.getUpdatedAt())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        tourPostRepository.saveAll(docList);
+//        return "관광지후기: " + docList.size() + "건 완료";
+//    }
 
     // =========================================================
     // 4. 뉴스 (News)
@@ -252,30 +252,30 @@ public class SearchServiceImpl implements SearchService {
     // =========================================================
     // 6. 개인 이력서 (JobUserPost)
     // =========================================================
-    public String jobUserPostDtoToEs() {
-        List<JobUserPost> dbList = jobUserPostMapper.findAll();
-        if (dbList.isEmpty()) return "이력서: 데이터 없음";
-
-        List<JobUserPostDocument> docList = dbList.stream()
-                .map(dto -> JobUserPostDocument.builder()
-                        .id(dto.getId())
-                        .title(dto.getTitle())
-                        .companyName(dto.getCompanyName())
-                        .description(dto.getDescription())
-                        .category(dto.getCategory())
-                        .userId(dto.getUserId())
-                        .companyType(dto.getCompanyType())
-                        .careerLevel(dto.getCareerLevel())
-                        .education(dto.getEducation())
-                        .deadline(dto.getDeadline())
-                        .createdAt(dto.getCreatedAt())
-                        .isActive(dto.getIsActive())
-                        .build())
-                .collect(Collectors.toList());
-
-        jobUserPostRepository.saveAll(docList);
-        return "이력서: " + docList.size() + "건 완료";
-    }
+//    public String jobUserPostDtoToEs() {
+//        List<JobUserPost> dbList = jobUserPostMapper.findAll();
+//        if (dbList.isEmpty()) return "이력서: 데이터 없음";
+//
+//        List<JobUserPostDocument> docList = dbList.stream()
+//                .map(dto -> JobUserPostDocument.builder()
+//                        .id(dto.getId())
+//                        .title(dto.getTitle())
+//                        .companyName(dto.getCompanyName())
+//                        .description(dto.getDescription())
+//                        .category(dto.getCategory())
+//                        .userId(dto.getUserId())
+//                        .companyType(dto.getCompanyType())
+//                        .careerLevel(dto.getCareerLevel())
+//                        .education(dto.getEducation())
+//                        .deadline(dto.getDeadline())
+//                        .createdAt(dto.getCreatedAt())
+//                        .isActive(dto.getIsActive())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        jobUserPostRepository.saveAll(docList);
+//        return "이력서: " + docList.size() + "건 완료";
+//    }
 
     // =========================================================
     // 7. 병원 (Hospital)

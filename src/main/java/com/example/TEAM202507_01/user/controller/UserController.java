@@ -51,6 +51,11 @@ public class UserController {
     // 3. 로그인
     @PostMapping("/login")
     public ResponseEntity<TokenDto> signIn(@RequestBody UserSignInDto signInDto) {
+        String idInput = signInDto.getLoginId();
+        if (idInput.matches("^.+\\s+.+$")) {
+            idInput = idInput.replaceAll(" ", "" );
+            signInDto.setLoginId(idInput);
+        }
         String token = userService.createToken(signInDto);
 
         // 쿠키에 토큰 추가
