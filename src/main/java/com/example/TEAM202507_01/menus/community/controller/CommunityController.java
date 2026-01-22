@@ -10,6 +10,7 @@ import com.example.TEAM202507_01.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bind.MethodDelegationBinder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +31,8 @@ public class CommunityController {
     private final AlramoService alramoService;
     private final FavoriteService favoriteService;
     private final UserService userService;
+    @Value("${server.redirect.address}")
+    private String serverUrl;
 
     // ==========================================
     // 🚑 1. [긴급 패치] 레거시 경로 지원 (프론트 호환용)
@@ -44,7 +47,7 @@ public class CommunityController {
         dto.setCategory("FREE");
         long postId = communityService.savePost(dto, files);
 //        TODO 서비스 시 고쳐야함
-        String postLink = "http://localhost:3000/community/free/" + postId;
+        String postLink = "http://"+serverUrl+"/community/free/" + postId;
         try { alramoService.sendNewPostNotification(dto.getTitle(), postLink);} catch (Exception e) {}
         return ResponseEntity.ok(postId);
     }
@@ -150,7 +153,7 @@ public class CommunityController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         long postId = communityService.savePost(dto, files);
-        String postLink = "http://localhost:3000/community/review/" + postId;
+        String postLink = "http://"+serverUrl+"/community/review/" + postId;
         try { alramoService.sendNewPostNotification(dto.getTitle(), postLink); } catch (Exception e) {}
         return ResponseEntity.ok(postId);
     }
